@@ -1,0 +1,200 @@
+// ==================== CONFIGURATION ====================
+const SPREADSHEET_ID = '1DsjQ3X9AW0gPRCBOIkuiTKMtsGmtbdTOjjW7YN4UIc8';
+const DATA_SHEET_NAME = 'Data';
+const NAME_SHEET_NAME = 'Name';
+
+// ==================== DO GET ====================
+function doGet(e) {
+  // Handle CORS
+  const origin = e && e.parameter && e.parameter.origin ? e.parameter.origin : '*';
+  
+  // Check if it's a request from web app
+  if (e && e.parameter && e.parameter.action) {
+    const action = e.parameter.action;
+    
+    if (action === 'getData') {
+      const result = getData();
+      return ContentService
+        .createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON)
+        .setHeader('Access-Control-Allow-Origin', origin);
+    }
+  }
+  
+  // Return HTML for web app (if accessed directly)
+  return HtmlService.createHtmlOutputFromFile('index')
+    .setTitle('ระบบวิเคราะห์หนี้คงค้าง')
+    .setFaviconUrl('https://www.google.com/s2/favicons?domain=www.google.com')
+    .setXFrameOptionsMode(HtmlService.XFrameOptionsMode.ALLOWALL);
+}
+
+// ==================== DO POST ====================
+function doPost(e) {
+  const origin = e && e.parameter && e.parameter.origin ? e.parameter.origin : '*';
+  
+  try {
+    const data = JSON.parse(e.postData.contents);
+    
+    if (data.action === 'export') {
+      const result = exportData(data.data);
+      return ContentService
+        .createTextOutput(JSON.stringify(result))
+        .setMimeType(ContentService.MimeType.JSON)
+        .setHeader('Access-Control-Allow-Origin', origin);
+    }
+  } catch (error) {
+    return ContentService
+      .createTextOutput(JSON.stringify({ success: false, error: error.toString() }))
+      .setMimeType(ContentService.MimeType.JSON)
+      .setHeader('Access-Control-Allow-Origin', origin);
+  }
+}
+
+// ==================== GET DATA ====================
+function getData() {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    
+    // Get Data from Data sheet
+    const dataSheet = ss.getSheetByName(DATA_SHEET_NAME);
+    const dataValues = dataSheet.getDataRange().getValues();
+    const headers = dataValues[0];
+    const dataRows = dataValues.slice(1);
+    
+    // Get Name sheet data
+    const nameSheet = ss.getSheetByName(NAME_SHEET_NAME);
+    const nameValues = nameSheet.getDataRange().getValues();
+    const nameRows = nameValues.slice(1);
+    
+    // Create mapping for branch/area info
+    const branchMap = {};
+    nameRows.forEach(row => {
+      const itemCode = row[0];
+      const branch = row[3];
+      const area = row[4];
+      const lastUpdate = row[6];
+      
+      if (itemCode) {
+        branchMap[itemCode] = {
+          branch: branch || 'N/A',
+          area: area || 'N/A',
+          lastUpdate: lastUpdate || 'No Data'
+        };
+      }
+    });
+    
+    // Process data with branch info
+    const processedData = dataRows.map(row => {
+      const itemCode = row[0];
+      const branchInfo = branchMap[itemCode] || { branch: 'N/A', area: 'N/A', lastUpdate: 'No Data' };
+      
+      return {
+        operationCode: row[0] || '',
+        operationName: row[1] || '',
+        customerCode: row[2] || '',
+        customerName: row[3] || '',
+        deposit: Number(row[4]) || 0,
+        balance: Number(row[5]) || 0,
+        total: Number(row[6]) || 0,
+        undue: Number(row[7]) || 0,
+        overdue: Number(row[8]) || 0,
+        day1: Number(row[9]) || 0,
+        day2: Number(row[10]) || 0,
+        day3: Number(row[11]) || 0,
+        day4: Number(row[12]) || 0,
+        day5: Number(row[13]) || 0,
+        day6: Number(row[14]) || 0,
+        days7to30: Number(row[15]) || 0,
+        over30Days: Number(row[16]) || 0,
+        branch: branchInfo.branch,
+        area: branchInfo.area,
+        lastUpdate: branchInfo.lastUpdate
+      };
+    });
+    
+    // Calculate summary statistics
+    const summary = {
+      totalCustomers: processedData.length,
+      totalBalance: processedData.reduce((sum, row) => sum + (row.balance || 0), 0),
+      totalDeposit: processedData.reduce((sum, row) => sum + (row.deposit || 0), 0),
+      totalOverdue: processedData.reduce((sum, row) => sum + (row.overdue || 0), 0),
+      totalDays7to30: processedData.reduce((sum, row) => sum + (row.days7to30 || 0), 0),
+      totalOver30Days: processedData.reduce((sum, row) => sum + (row.over30Days || 0), 0),
+      customersWithDebt: processedData.filter(row => (row.balance || 0) < 0).length,
+      customersWithOverdue: processedData.filter(row => (row.overdue || 0) < 0).length
+    };
+    
+    // Group by branch
+    const branchSummary = {};
+    processedData.forEach(row => {
+      const branch = row.branch;
+      if (!branchSummary[branch]) {
+        branchSummary[branch] = {
+          customers: 0,
+          totalBalance: 0,
+          totalOverdue: 0,
+          area: row.area
+        };
+      }
+      branchSummary[branch].customers++;
+      branchSummary[branch].totalBalance += (row.balance || 0);
+      branchSummary[branch].totalOverdue += (row.overdue || 0);
+    });
+    
+    return {
+      success: true,
+      data: processedData,
+      summary: summary,
+      branchSummary: branchSummary,
+      headers: headers
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}
+
+// ==================== EXPORT DATA ====================
+function exportData(data) {
+  try {
+    const ss = SpreadsheetApp.openById(SPREADSHEET_ID);
+    const timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+    const exportSheet = ss.insertSheet(`Export_${timestamp}`);
+    
+    // Create headers
+    const headers = ['Operation Code', 'Operation Name', 'Customer Code', 'Customer Name', 
+                     'Deposit', 'Balance', 'Total', 'Undue', 'Overdue', '1 Day', '2 Days', 
+                     '3 Days', '4 Days', '5 Days', '6 Days', '7-30 Days', 'Over 30 Days', 
+                     'Branch', 'Area', 'Last Update'];
+    exportSheet.getRange(1, 1, 1, headers.length).setValues([headers]);
+    
+    // Write data
+    const rows = data.map(row => [
+      row.operationCode, row.operationName, row.customerCode, row.customerName,
+      row.deposit, row.balance, row.total, row.undue, row.overdue,
+      row.day1, row.day2, row.day3, row.day4, row.day5, row.day6,
+      row.days7to30, row.over30Days, row.branch, row.area, row.lastUpdate
+    ]);
+    
+    if (rows.length > 0) {
+      exportSheet.getRange(2, 1, rows.length, headers.length).setValues(rows);
+    }
+    
+    // Format the sheet
+    exportSheet.getRange(1, 1, 1, headers.length).setFontWeight('bold');
+    exportSheet.autoResizeColumns(1, headers.length);
+    
+    return {
+      success: true,
+      message: `Export successful: ${rows.length} rows exported`,
+      sheetName: exportSheet.getName()
+    };
+  } catch (error) {
+    return {
+      success: false,
+      error: error.toString()
+    };
+  }
+}

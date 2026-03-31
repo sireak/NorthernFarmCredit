@@ -3,198 +3,240 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Northern Farm | Debt Management Dashboard </title>
+    <title>Northern Farm | Branch Executive Dashboard</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --primary-color: #2c3e50; --accent-color: #27ae60; }
-        body { background-color: #f4f7f6; font-family: 'Inter', sans-serif; }
-        .navbar { background: var(--primary-color) !important; color: white; }
-        .card { border: none; border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.07); transition: 0.3s; }
-        .card:hover { transform: translateY(-5px); }
-        .stat-icon { font-size: 2rem; opacity: 0.3; position: absolute; right: 20px; top: 20px; }
-        .loading-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); display: flex; justify-content: center; align-items: center; z-index: 9999; }
-        .badge-overdue { background-color: #e74c3c; }
+        :root { --primary-dark: #001529; --accent: #1890ff; }
+        body { background-color: #f4f7f9; font-family: 'Inter', -apple-system, sans-serif; }
+        .navbar { background: var(--primary-dark); border-bottom: 3px solid var(--accent); }
+        .card { border: none; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .branch-link { color: var(--accent); font-weight: 600; cursor: pointer; text-decoration: none; }
+        .branch-link:hover { text-decoration: underline; }
+        
+        /* Progress Bar in Table */
+        .progress { height: 8px; background-color: #e9ecef; border-radius: 5px; overflow: hidden; margin-top: 5px; }
+        .progress-bar { background-color: #ff4d4f; }
+        
+        .loader-wrapper { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #fff; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; }
     </style>
 </head>
 <body>
 
-<div id="loader" class="loading-overlay">
-    <div class="text-center">
-        <div class="spinner-border text-success" role="status"></div>
-        <p class="mt-2">Fetching Real-time Data...</p>
-    </div>
+<div id="loader" class="loader-wrapper">
+    <div class="spinner-border text-primary" role="status"></div>
+    <h6 class="mt-3 text-secondary">Loading Branch Summaries...</h6>
 </div>
 
-<nav class="navbar navbar-dark mb-4">
-    <div class="container-fluid">
-        <span class="navbar-brand mb-0 h1"><i class="fa-solid fa-chart-line me-2"></i> Northern Farm Credit Analysis</span>
+<nav class="navbar navbar-dark py-3 shadow">
+    <div class="container-fluid px-4">
+        <span class="navbar-brand d-flex align-items-center">
+            <i class="fa-solid fa-chart-line me-3 text-info"></i>
+            <strong>Northern Farm | Credit Portfolio Management</strong>
+        </span>
     </div>
 </nav>
 
-<div class="container-fluid px-4">
-    <div class="row g-3 mb-4">
-        <div class="col-md-3">
+<div class="container-fluid py-4 px-4">
+    <div class="row g-3 mb-4 text-center">
+        <div class="col-md-4">
             <div class="card p-3 bg-white border-start border-primary border-4">
-                <i class="fa-solid fa-file-invoice-dollar stat-icon text-primary"></i>
-                <small class="text-muted fw-bold">TOTAL BALANCE</small>
-                <h2 id="sumBalance" class="mb-0">0</h2>
+                <small class="text-muted fw-bold text-uppercase">Total Portfolio</small>
+                <h2 id="totalPort" class="mb-0 fw-bold">0</h2>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card p-3 bg-white border-start border-danger border-4">
-                <i class="fa-solid fa-clock-rotate-left stat-icon text-danger"></i>
-                <small class="text-muted fw-bold">OVERDUE (> 0 Days)</small>
-                <h2 id="sumOverdue" class="text-danger mb-0">0</h2>
+                <small class="text-muted fw-bold text-uppercase">Total Overdue</small>
+                <h2 id="totalOvd" class="text-danger mb-0 fw-bold">0</h2>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card p-3 bg-white border-start border-warning border-4">
-                <i class="fa-solid fa-triangle-exclamation stat-icon text-warning"></i>
-                <small class="text-muted fw-bold">CRITICAL (> 30 Days)</small>
-                <h2 id="sumCritical" class="text-warning mb-0">0</h2>
-            </div>
-        </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card p-3 bg-white border-start border-success border-4">
-                <i class="fa-solid fa-location-dot stat-icon text-success"></i>
-                <small class="text-muted fw-bold">ACTIVE BRANCHES</small>
-                <h2 id="branchCount" class="mb-0 text-success">0</h2>
+                <small class="text-muted fw-bold text-uppercase">Active Branches</small>
+                <h2 id="branchCount" class="text-success mb-0 fw-bold">0</h2>
             </div>
         </div>
     </div>
 
-    <div class="row mb-4">
-        <div class="col-lg-8">
-            <div class="card p-4 h-100">
-                <h5 class="mb-3">Debt Structure by Branch</h5>
-                <canvas id="mainChart" style="max-height: 300px;"></canvas>
-            </div>
+    <div class="card shadow-sm border-0">
+        <div class="card-header bg-white py-3 border-bottom d-flex justify-content-between align-items-center">
+            <h5 class="mb-0 fw-bold text-secondary">Branch Performance Overview</h5>
+            <span class="badge bg-light text-dark border">Currency: MMK</span>
         </div>
-        <div class="col-lg-4">
-            <div class="card p-4 h-100 text-center">
-                <h5 class="mb-3">Overdue Ratio</h5>
-                <canvas id="ratioChart" style="max-height: 300px;"></canvas>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table id="branchTable" class="table table-hover align-middle mb-0 w-100">
+                    <thead class="bg-light">
+                        <tr>
+                            <th>Branch Name</th>
+                            <th>Area</th>
+                            <th class="text-center">Customers</th>
+                            <th class="text-end">Total Debt</th>
+                            <th class="text-end text-danger">Overdue Amount</th>
+                            <th class="text-center">Risk Level</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                </table>
             </div>
         </div>
     </div>
+</div>
 
-    <div class="card p-4 mb-5">
-        <div class="table-responsive">
-            <table id="dataTable" class="table table-hover align-middle w-100">
-                <thead class="table-light">
-                    <tr>
-                        <th>Branch</th>
-                        <th>Area</th>
-                        <th>Customer Name</th>
-                        <th class="text-end">Total Balance</th>
-                        <th class="text-end">Overdue</th>
-                        <th class="text-end">Over 30D</th>
-                        <th>Last Update</th>
-                    </tr>
-                </thead>
-            </table>
+<div class="modal fade" id="branchModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content border-0 shadow-lg">
+            <div class="modal-header bg-primary text-white">
+                <h5 class="modal-title fw-bold" id="modalBranchTitle">Branch Detail</h5>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-0">
+                <div class="p-3 bg-light border-bottom">
+                    <div class="row text-center">
+                        <div class="col-4">
+                            <small class="text-muted d-block">Branch Total Debt</small>
+                            <span id="mBranchTotal" class="fw-bold fs-5">-</span>
+                        </div>
+                        <div class="col-4 border-start">
+                            <small class="text-muted d-block text-danger">Branch Overdue</small>
+                            <span id="mBranchOvd" class="fw-bold fs-5 text-danger">-</span>
+                        </div>
+                        <div class="col-4 border-start">
+                            <small class="text-muted d-block">Last Update</small>
+                            <span id="mBranchSync" class="fw-bold fs-5">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="p-4">
+                    <table id="customerTable" class="table table-striped align-middle w-100">
+                        <thead class="table-dark small">
+                            <tr>
+                                <th>Cust Code</th>
+                                <th>Customer Name</th>
+                                <th class="text-end">Balance</th>
+                                <th class="text-end">Overdue</th>
+                                <th class="text-end text-warning">Over 30D</th>
+                                <th class="text-center">Details</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 </div>
 
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
 <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwA7MzcEy6DKirevQdBFWLOzKaxboATV1A_MkdgnoZUaiSjtU5_LXRGm5M9OgF38EVT/exec';
+    let fullData = [];
+    let summaryData = [];
 
     async function init() {
         try {
             const res = await fetch(API_URL, { redirect: 'follow' });
-            const data = await res.json();
+            fullData = await res.json();
             
-            processDashboard(data);
-            renderTable(data);
-            renderCharts(data);
-            
-            document.getElementById('loader').style.display = 'none';
-        } catch (err) {
-            console.error(err);
-            alert('Error loading data. Please check CORS or Web App permissions.');
+            // Group Data by Branch
+            const groups = {};
+            fullData.forEach(row => {
+                if (!groups[row.branch]) {
+                    groups[row.branch] = { 
+                        name: row.branch, 
+                        area: row.area, 
+                        count: 0, 
+                        total: 0, 
+                        overdue: 0, 
+                        sync: row.lastUpdate 
+                    };
+                }
+                groups[row.branch].count++;
+                groups[row.branch].total += Number(row.total);
+                groups[row.branch].overdue += Number(row.overdue);
+            });
+            summaryData = Object.values(groups);
+
+            updateKPIs();
+            renderBranchTable();
+            $('#loader').fadeOut();
+        } catch (e) {
+            alert('API Connection Error');
         }
     }
 
-    function processDashboard(data) {
-        const total = data.reduce((s, v) => s + Number(v.total || 0), 0);
-        const overdue = data.reduce((s, v) => s + Number(v.overdue || 0), 0);
-        const critical = data.reduce((s, v) => s + Number(v.overdueOver30 || 0), 0);
-        const branches = new Set(data.map(v => v.branch)).size;
-
-        document.getElementById('sumBalance').innerText = total.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('sumOverdue').innerText = overdue.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('sumCritical').innerText = critical.toLocaleString(undefined, {minimumFractionDigits: 2});
-        document.getElementById('branchCount').innerText = branches;
+    function updateKPIs() {
+        const total = summaryData.reduce((s, x) => s + x.total, 0);
+        const ovd = summaryData.reduce((s, x) => s + x.overdue, 0);
+        $('#totalPort').text(total.toLocaleString());
+        $('#totalOvd').text(ovd.toLocaleString());
+        $('#branchCount').text(summaryData.length);
     }
 
-    function renderTable(data) {
-        $('#dataTable').DataTable({
-            data: data,
+    function renderBranchTable() {
+        $('#branchTable').DataTable({
+            data: summaryData,
             columns: [
-                { data: 'branch' },
+                { data: 'name', render: d => `<span class="branch-link" onclick="openBranchDetails('${d}')">${d}</span>` },
                 { data: 'area' },
-                { data: 'customerName', render: (d, t, r) => `<b>${d}</b><br><small class='text-muted'>${r.customerCode}</small>` },
-                { data: 'total', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 2) },
-                { data: 'overdue', className: 'text-end text-danger', render: $.fn.dataTable.render.number(',', '.', 2) },
-                { data: 'overdueOver30', className: 'text-end fw-bold', render: $.fn.dataTable.render.number(',', '.', 2) },
-                { data: 'lastUpdate', render: d => d === "N/A" ? "-" : d }
+                { data: 'count', className: 'text-center' },
+                { data: 'total', className: 'text-end fw-bold', render: $.fn.dataTable.render.number(',', '.', 0) },
+                { data: 'overdue', className: 'text-end text-danger fw-bold', render: $.fn.dataTable.render.number(',', '.', 0) },
+                { 
+                    render: (d, t, r) => {
+                        let pct = r.total > 0 ? (r.overdue / r.total * 100).toFixed(0) : 0;
+                        return `
+                            <div class="small text-muted">${pct}% Overdue</div>
+                            <div class="progress"><div class="progress-bar" style="width: ${pct}%"></div></div>
+                        `;
+                    }
+                },
+                { 
+                    render: (d, t, r) => `<button class="btn btn-sm btn-outline-primary" onclick="openBranchDetails('${r.name}')"><i class="fa-solid fa-users-viewfinder"></i> Explore</button>` 
+                }
             ],
-            dom: 'Bfrtip',
-            buttons: ['copy', 'excel', 'print'],
-            pageLength: 10,
-            order: [[4, 'desc']]
+            order: [[4, 'desc']], // Sort by Overdue Amount
+            dom: 'tip'
         });
     }
 
-    function renderCharts(data) {
-        // Bar Chart
-        const branches = [...new Set(data.map(d => d.branch))];
-        const branchData = branches.map(b => 
-            data.filter(d => d.branch === b).reduce((s, v) => s + Number(v.total), 0)
-        );
+    function openBranchDetails(branchName) {
+        const customers = fullData.filter(x => x.branch === branchName);
+        const summary = summaryData.find(x => x.name === branchName);
 
-        new Chart(document.getElementById('mainChart'), {
-            type: 'bar',
-            data: {
-                labels: branches,
-                datasets: [{
-                    label: 'Balance by Branch',
-                    data: branchData,
-                    backgroundColor: '#3498db'
-                }]
-            }
+        $('#modalBranchTitle').text('Branch Detail: ' + branchName);
+        $('#mBranchTotal').text(summary.total.toLocaleString());
+        $('#mBranchOvd').text(summary.overdue.toLocaleString());
+        $('#mBranchSync').text(summary.sync);
+
+        if ($.fn.DataTable.isDataTable('#customerTable')) {
+            $('#customerTable').DataTable().destroy();
+        }
+
+        $('#customerTable').DataTable({
+            data: customers,
+            columns: [
+                { data: 'customerCode' },
+                { data: 'customerName', render: d => `<span class="fw-bold">${d}</span>` },
+                { data: 'total', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
+                { data: 'overdue', className: 'text-end text-danger', render: $.fn.dataTable.render.number(',', '.', 0) },
+                { data: 'overdueOver30', className: 'text-end text-warning fw-bold', render: $.fn.dataTable.render.number(',', '.', 0) },
+                { 
+                    render: (d, t, r) => `<span class="badge bg-light text-dark border">Age 1-30: ${r.overdue7_30.toLocaleString()}</span>`
+                }
+            ],
+            order: [[3, 'desc']],
+            pageLength: 10
         });
 
-        // Pie Chart
-        const totalDebt = data.reduce((s, v) => s + Number(v.total), 0);
-        const totalOverdue = data.reduce((s, v) => s + Number(v.overdue), 0);
-
-        new Chart(document.getElementById('ratioChart'), {
-            type: 'doughnut',
-            data: {
-                labels: ['Normal', 'Overdue'],
-                datasets: [{
-                    data: [totalDebt - totalOverdue, totalOverdue],
-                    backgroundColor: ['#2ecc71', '#e74c3c']
-                }]
-            }
-        });
+        $('#branchModal').modal('show');
     }
 
     init();

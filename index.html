@@ -6,35 +6,64 @@
     <title>Northern Farm | Executive Credit Intelligence</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --primary: #002140; --accent: #1890ff; --bg: #f4f6f8; }
-        body { background-color: var(--bg); font-family: 'Inter', sans-serif; color: #333; }
+        :root { 
+            --corp-navy: #0f172a; 
+            --corp-blue: #2563eb; 
+            --corp-red: #dc2626; 
+            --corp-gray-bg: #f8fafc;
+            --corp-border: #e2e8f0;
+        }
+        body { background-color: var(--corp-gray-bg); font-family: 'Inter', sans-serif; color: #334155; }
         
-        .navbar { background: var(--primary); border-bottom: 3px solid var(--accent); }
-        .card-main { border: none; border-radius: 12px; background: #fff; box-shadow: 0 4px 15px rgba(0,0,0,0.05); overflow: hidden; }
-        
-        /* Alerts Styling */
-        .alert-card { border-left: 4px solid; border-radius: 8px; background: #fff; box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
-        .alert-card.danger { border-color: #ff4d4f; }
-        .alert-card.warning { border-color: #faad14; }
-        .alert-card.critical { border-color: #820014; }
+        /* Top Navigation */
+        .navbar { background: var(--corp-navy); padding: 1rem 1.5rem; }
+        .brand-title { letter-spacing: 0.5px; }
 
-        /* Table Premium Look */
-        .table thead th { background: #fafafa; color: #666; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; border-bottom: 2px solid #eee; padding: 12px; white-space: nowrap; }
-        .table tbody td { padding: 12px; vertical-align: middle; }
+        /* Card & Containers */
+        .card-main { border: 1px solid var(--corp-border); border-radius: 8px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05); }
         
-        /* Mobile Modal Fixes */
-        .modal-dialog-scrollable .modal-body { overflow-y: auto; -webkit-overflow-scrolling: touch; }
-        .table-responsive { -webkit-overflow-scrolling: touch; }
+        /* Enterprise Table Styling */
+        table.dataTable { border-collapse: collapse !important; width: 100% !important; margin-top: 0 !important; }
+        .table > :not(caption) > * > * { padding: 14px 16px; border-bottom: 1px solid var(--corp-border); border-right: none; border-left: none; }
         
-        /* Last Update Badge */
-        .update-badge { background: #e6f7ff; color: #0050b3; padding: 4px 10px; border-radius: 6px; font-size: 0.75rem; font-weight: 600; display: inline-block; border: 1px solid #91d5ff; }
+        /* Table Headers */
+        .table thead th { 
+            background-color: #f1f5f9; 
+            color: #475569; 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            letter-spacing: 0.8px; 
+            font-weight: 600; 
+            border-bottom: 2px solid #cbd5e1 !important;
+            white-space: nowrap;
+        }
+        
+        /* Highlight Specific Columns */
+        .col-overdue { background-color: #fef2f2 !important; color: var(--corp-red); font-weight: 600; }
+        .col-aging-high { background-color: #fff1f2 !important; color: #9f1239; font-weight: 700; }
+        .col-aging-mid { background-color: #eff6ff !important; color: #1d4ed8; }
+        
+        /* Modal Polish */
+        .modal-content { border: none; border-radius: 0; }
+        .modal-header { background-color: #fff; border-bottom: 1px solid var(--corp-border); }
+        .modal-title { font-weight: 600; color: var(--corp-navy); }
+        
+        /* Zero Value Formatting */
+        .text-zero { color: #cbd5e1; font-weight: 400; }
+        .text-negative { color: #16a34a; } /* สีเขียวสำหรับยอดติดลบ (ถ้าเป็นยอดเครดิต/จ่ายเกิน) */
 
+        /* Fix DataTable inside Modal */
+        .dataTables_scrollHeadInner, .table { width: 100% !important; }
+        .dataTables_wrapper .row { margin: 0; padding: 12px 16px; align-items: center; }
+        .dataTables_filter input { border: 1px solid var(--corp-border); border-radius: 4px; padding: 4px 12px; }
+        .dataTables_filter input:focus { outline: none; border-color: var(--corp-blue); box-shadow: 0 0 0 2px rgba(37,99,235,0.1); }
+        
         .loader-overlay { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
@@ -42,33 +71,28 @@
 
 <div id="loader" class="loader-overlay">
     <div class="spinner-border text-primary" role="status"></div>
-    <div class="mt-3 fw-bold text-muted">Analyzing Credit Risk...</div>
+    <div class="mt-3 fw-medium text-muted small">INITIALIZING DATA...</div>
 </div>
 
-<nav class="navbar navbar-dark py-3 mb-4 shadow-sm">
+<nav class="navbar navbar-dark mb-4">
     <div class="container-fluid px-4">
         <span class="navbar-brand d-flex align-items-center">
-            <i class="fa-solid fa-shield-halved me-3 text-info fs-4"></i>
+            <i class="fa-solid fa-chart-pie me-3 text-info fs-5"></i>
             <div>
-                <div class="fw-bold fs-5 lh-1">Northern Farm Credit</div>
-                <small class="opacity-75" style="font-size: 0.7rem;">EXECUTIVE RISK DASHBOARD</small>
+                <div class="fw-bold fs-5 brand-title lh-1">Northern Farm</div>
+                <small class="opacity-75" style="font-size: 0.65rem; letter-spacing: 1px;">CREDIT PORTFOLIO MANAGEMENT</small>
             </div>
         </span>
     </div>
 </nav>
 
 <div class="container-fluid px-4">
-    
-    <h6 class="fw-bold text-muted mb-3"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Critical Risk Analysis</h6>
-    <div class="row g-3 mb-4" id="alertSection">
-        </div>
-
     <div class="card card-main mb-5">
-        <div class="p-4 border-bottom d-flex justify-content-between align-items-center bg-white">
-            <h5 class="mb-0 fw-bold text-primary"><i class="fa-solid fa-building-columns me-2"></i>Branch Portfolio Summary</h5>
+        <div class="px-4 py-3 border-bottom d-flex justify-content-between align-items-center bg-white">
+            <h6 class="mb-0 fw-bold text-secondary" style="letter-spacing: 0.5px;">BRANCH PERFORMANCE OVERVIEW</h6>
             <div id="exportBtns"></div>
         </div>
-        <div class="table-responsive px-3 pb-3">
+        <div class="p-0">
             <table id="branchTable" class="table table-hover align-middle w-100 mb-0">
                 <thead>
                     <tr>
@@ -76,10 +100,9 @@
                         <th>Area</th>
                         <th class="text-center">Customers</th>
                         <th class="text-end">Deposit</th>
-                        <th class="text-end text-primary">Total Balance</th>
-                        <th class="text-end text-success">Undue</th>
-                        <th class="text-end text-danger">Overdue</th>
-                        <th class="text-center">Last Update</th>
+                        <th class="text-end">Total Balance</th>
+                        <th class="text-end">Undue</th>
+                        <th class="text-end">Overdue</th>
                         <th class="text-center">Action</th>
                     </tr>
                 </thead>
@@ -89,39 +112,40 @@
 </div>
 
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen modal-dialog-scrollable">
-        <div class="modal-content border-0">
-            <div class="modal-header bg-white px-4 py-3 shadow-sm z-1">
-                <h5 class="modal-title d-flex align-items-center">
-                    <i class="fa-solid fa-users me-3 fs-4 text-primary"></i>
+    <div class="modal-dialog modal-fullscreen">
+        <div class="modal-content">
+            <div class="modal-header px-4 py-3 shadow-sm z-3">
+                <div class="d-flex align-items-center">
+                    <i class="fa-solid fa-users text-secondary me-3 fs-5"></i>
                     <div>
-                        <span id="mBranchHeader" class="fw-bold text-dark">Branch Detail</span>
+                        <h5 class="modal-title mb-0" id="mBranchHeader">Branch Detail</h5>
+                        <div class="small text-muted" style="font-size: 0.7rem;">CUSTOMER AGING ANALYSIS</div>
                     </div>
-                </h5>
-                <div class="d-flex align-items-center gap-2">
-                    <div id="custExportBtns" class="d-none d-md-block"></div> <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="d-flex align-items-center gap-3">
+                    <div id="custExportBtns"></div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
             </div>
-            <div class="modal-body p-3 bg-light">
-                <div class="card card-main border-0">
-                    <div class="table-responsive">
-                        <table id="customerTable" class="table table-striped table-bordered align-middle w-100 mb-0" style="font-size: 0.85rem;">
-                            <thead class="table-dark">
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Customer Name</th>
-                                    <th class="text-end">Deposit</th>
-                                    <th class="text-end">Total</th>
-                                    <th class="text-end">Undue</th>
-                                    <th class="text-end text-danger">Overdue</th>
-                                    <th class="text-end">1D</th><th class="text-end">2D</th><th class="text-end">3D</th>
-                                    <th class="text-end">4D</th><th class="text-end">5D</th><th class="text-end">6D</th>
-                                    <th class="text-end bg-primary border-primary">7-30D</th>
-                                    <th class="text-end bg-danger border-danger">30D+</th>
-                                </tr>
-                            </thead>
-                        </table>
-                    </div>
+            
+            <div class="modal-body p-4 bg-light">
+                <div class="card card-main">
+                    <table id="customerTable" class="table table-hover align-middle w-100 mb-0" style="font-size: 0.8rem;">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Customer Name</th>
+                                <th class="text-end">Deposit</th>
+                                <th class="text-end">Total</th>
+                                <th class="text-end">Undue</th>
+                                <th class="text-end text-danger">Overdue</th>
+                                <th class="text-end">1D</th><th class="text-end">2D</th><th class="text-end">3D</th>
+                                <th class="text-end">4D</th><th class="text-end">5D</th><th class="text-end">6D</th>
+                                <th class="text-end text-primary">7-30D</th>
+                                <th class="text-end text-danger">30D+</th>
+                            </tr>
+                        </thead>
+                    </table>
                 </div>
             </div>
         </div>
@@ -136,193 +160,109 @@
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.print.min.js"></script>
 
 <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwA7MzcEy6DKirevQdBFWLOzKaxboATV1A_MkdgnoZUaiSjtU5_LXRGm5M9OgF38EVT/exec';
     let fullData = [];
 
+    // ฟังก์ชันจัดรูปแบบตัวเลขสไตล์บัญชี
+    function formatAcc(data) {
+        let num = Number(data || 0);
+        if (num === 0) return '<span class="text-zero">-</span>';
+        if (num < 0) return `<span class="text-negative">${num.toLocaleString()}</span>`;
+        return num.toLocaleString();
+    }
+
     async function init() {
         try {
             const res = await fetch(API_URL, { redirect: 'follow' });
             fullData = await res.json();
-            
-            analyzeRisk(fullData);
             renderSummary(fullData);
             $('#loader').fadeOut();
         } catch (e) {
             console.error(e);
-            alert('Failed to sync data from Google Sheets.');
+            alert('Data synchronization failed.');
         }
-    }
-
-    // ฟังก์ชันคำนวณและแสดงแจ้งเตือน (Risk Analysis)
-    function analyzeRisk(data) {
-        let overExpCount = 0, overExpAmt = 0;
-        let noDepCount = 0, noDepAmt = 0;
-        let critCount = 0, critAmt = 0;
-
-        data.forEach(r => {
-            let total = Number(r.total || 0);
-            let deposit = Number(r.deposit || 0);
-            let ovd30 = Number(r.overdueOver30 || 0);
-
-            // 1. Total > Deposit (หนี้เกินมัดจำ)
-            if (total > deposit) {
-                overExpCount++;
-                overExpAmt += (total - deposit); // คำนวณส่วนต่างที่เกิน
-            }
-            // 2. No Deposit but has Debt (ไม่มีมัดจำแต่มียอดหนี้)
-            if (deposit === 0 && total > 0) {
-                noDepCount++;
-                noDepAmt += total;
-            }
-            // 3. Overdue > 30 Days (หนี้เสียวิกฤต)
-            if (ovd30 > 0) {
-                critCount++;
-                critAmt += ovd30;
-            }
-        });
-
-        // สร้าง HTML สำหรับ Alerts
-        const alertHtml = `
-            <div class="col-md-4">
-                <div class="alert-card danger p-3 h-100 d-flex align-items-start">
-                    <i class="fa-solid fa-scale-unbalanced text-danger fs-3 me-3 mt-1"></i>
-                    <div>
-                        <h6 class="fw-bold mb-1">Exposure > Deposit</h6>
-                        <div class="small text-muted mb-2">Customers with debt exceeding deposit</div>
-                        <h4 class="mb-0 text-danger fw-bold">${overExpCount} <span class="fs-6 fw-normal text-dark">ราย</span></h4>
-                        <div class="small fw-bold mt-1">Excess Risk: ${overExpAmt.toLocaleString()}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="alert-card warning p-3 h-100 d-flex align-items-start">
-                    <i class="fa-solid fa-user-shield text-warning fs-3 me-3 mt-1"></i>
-                    <div>
-                        <h6 class="fw-bold mb-1">Zero Deposit (Unsecured)</h6>
-                        <div class="small text-muted mb-2">Active debt without any deposit</div>
-                        <h4 class="mb-0 text-warning fw-bold">${noDepCount} <span class="fs-6 fw-normal text-dark">ราย</span></h4>
-                        <div class="small fw-bold mt-1">Total Debt: ${noDepAmt.toLocaleString()}</div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="alert-card critical p-3 h-100 d-flex align-items-start" style="border-color: #820014;">
-                    <i class="fa-solid fa-clock-rotate-left fs-3 me-3 mt-1" style="color: #820014;"></i>
-                    <div>
-                        <h6 class="fw-bold mb-1" style="color: #820014;">Critical Overdue (>30 Days)</h6>
-                        <div class="small text-muted mb-2">Aged receivables requiring legal action</div>
-                        <h4 class="mb-0 fw-bold" style="color: #820014;">${critCount} <span class="fs-6 fw-normal text-dark">ราย</span></h4>
-                        <div class="small fw-bold mt-1">Critical Debt: ${critAmt.toLocaleString()}</div>
-                    </div>
-                </div>
-            </div>
-        `;
-        $('#alertSection').html(alertHtml);
     }
 
     function renderSummary(data) {
         const groups = {};
         data.forEach(r => {
             if (!groups[r.branch]) {
-                groups[r.branch] = { 
-                    name: r.branch, 
-                    area: r.area, 
-                    custCount: 0, 
-                    deposit: 0, 
-                    total: 0, 
-                    undue: 0, 
-                    overdue: 0,
-                    lastUpdate: r.lastUpdate // เก็บค่า Last Update ของบรรทัดแรกที่เจอในสาขานี้
-                };
+                groups[r.branch] = { name: r.branch, area: r.area, custCount: 0, deposit: 0, total: 0, undue: 0, overdue: 0 };
             }
             groups[r.branch].custCount++;
             groups[r.branch].deposit += Number(r.deposit || 0);
             groups[r.branch].total += Number(r.total || 0);
             groups[r.branch].undue += Number(r.undue || 0);
             groups[r.branch].overdue += Number(r.overdue || 0);
-            
-            // อัพเดทให้เป็นค่าล่าสุดเสมอ (ถ้ามีข้อมูลหลายบรรทัดในสาขาเดียวกัน)
-            if (r.lastUpdate && r.lastUpdate !== "-") {
-                groups[r.branch].lastUpdate = r.lastUpdate;
-            }
         });
 
-        const summary = Object.values(groups);
-
-        const table = $('#branchTable').DataTable({
-            data: summary,
+        $('#branchTable').DataTable({
+            data: Object.values(groups),
             columns: [
-                { data: 'name', className: 'fw-bold text-primary', render: d => `<span style="cursor:pointer;" onclick="openDetail('${d}')">${d}</span>` },
-                { data: 'area' },
-                { data: 'custCount', className: 'text-center fw-bold' },
-                { data: 'deposit', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'total', className: 'text-end fw-bold text-primary', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'undue', className: 'text-end text-success', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue', className: 'text-end text-danger fw-bold', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { 
-                    data: 'lastUpdate', 
-                    className: 'text-center',
-                    render: d => `<span class="update-badge"><i class="fa-regular fa-clock me-1"></i>${d || '-'}</span>` 
-                },
-                { 
-                    className: 'text-center',
-                    render: (d, t, r) => `<button class="btn btn-sm btn-outline-primary" onclick="openDetail('${r.name}')"><i class="fa-solid fa-list me-1"></i>View</button>` 
-                }
+                { data: 'name', className: 'fw-semibold text-primary', render: d => `<span style="cursor:pointer;" onclick="openDetail('${d}')">${d}</span>` },
+                { data: 'area', className: 'text-muted' },
+                { data: 'custCount', className: 'text-center' },
+                { data: 'deposit', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'total', className: 'text-end fw-semibold', render: d => formatAcc(d) },
+                { data: 'undue', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'overdue', className: 'text-end col-overdue', render: d => formatAcc(d) },
+                { className: 'text-center', render: (d, t, r) => `<button class="btn btn-sm btn-outline-secondary py-1" onclick="openDetail('${r.name}')"><i class="fa-solid fa-arrow-right"></i></button>` }
             ],
-            dom: 'Bfrtip',
-            buttons: [
-                { extend: 'excel', className: 'btn btn-sm btn-success', text: '<i class="fa-solid fa-file-excel me-1"></i> Export Branch' }
-            ],
-            order: [[6, 'desc']] // เรียงลำดับจากสาขาที่ Overdue สูงสุดขึ้นก่อน
+            dom: '<"row"<"col-sm-12 col-md-6"B><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            buttons: [ { extend: 'excel', className: 'btn btn-sm btn-success', text: 'Export to Excel' } ],
+            order: [[6, 'desc']]
         });
-        table.buttons().container().appendTo('#exportBtns');
     }
 
     function openDetail(branchName) {
         const customers = fullData.filter(x => x.branch === branchName);
-        $('#mBranchHeader').text('Branch Customers: ' + branchName);
+        $('#mBranchHeader').text(branchName);
 
         if ($.fn.DataTable.isDataTable('#customerTable')) {
-            $('#customerTable').DataTable().destroy();
+            $('#customerTable').DataTable().clear().destroy();
         }
 
         const cTable = $('#customerTable').DataTable({
             data: customers,
-            scrollX: true, // บังคับให้ตารางเลื่อนซ้ายขวาได้
+            scrollY: '60vh', // เปิดการเลื่อนแนวตั้ง ล็อกหัวตารางไว้
+            scrollX: true,   // เปิดการเลื่อนแนวนอน
+            scrollCollapse: true,
             columns: [
-                { data: 'customerCode', className: 'fw-bold text-nowrap' },
-                { data: 'customerName', className: 'text-nowrap' },
-                { data: 'deposit', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'total', className: 'text-end fw-bold', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'undue', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue', className: 'text-end text-danger fw-bold', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue1', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue2', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue3', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue4', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue5', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue6', className: 'text-end', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdue7_30', className: 'text-end bg-primary bg-opacity-10 fw-bold', render: $.fn.dataTable.render.number(',', '.', 0) },
-                { data: 'overdueOver30', className: 'text-end bg-danger bg-opacity-10 text-danger fw-bold', render: $.fn.dataTable.render.number(',', '.', 0) }
+                { data: 'customerCode', className: 'fw-medium text-muted' },
+                { data: 'customerName', className: 'fw-medium' },
+                { data: 'deposit', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'total', className: 'text-end fw-semibold', render: d => formatAcc(d) },
+                { data: 'undue', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'overdue', className: 'text-end col-overdue', render: d => formatAcc(d) },
+                { data: 'overdue1', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'overdue2', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'overdue3', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'overdue4', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'overdue5', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'overdue6', className: 'text-end', render: d => formatAcc(d) },
+                { data: 'overdue7_30', className: 'text-end col-aging-mid', render: d => formatAcc(d) },
+                { data: 'overdueOver30', className: 'text-end col-aging-high', render: d => formatAcc(d) }
             ],
-            dom: 'Bfrtip',
-            buttons: [
-                { extend: 'excel', className: 'btn btn-sm btn-success', title: 'Customers_' + branchName }
-            ],
-            pageLength: 25,
-            order: [[5, 'desc']] // ลูกค้า Overdue เยอะสุดขึ้นก่อน
+            dom: '<"row"<"col-sm-12 col-md-6"l><"col-sm-12 col-md-6"f>>rt<"row"<"col-sm-12 col-md-5"i><"col-sm-12 col-md-7"p>>',
+            buttons: [ { extend: 'excel', className: 'btn btn-sm btn-success', text: 'Download Data' } ],
+            pageLength: 50,
+            order: [[5, 'desc']]
         });
 
         $('#custExportBtns').empty();
         cTable.buttons().container().appendTo('#custExportBtns');
         
-        // Show Modal
+        // เปิด Modal
         const myModal = new bootstrap.Modal(document.getElementById('detailModal'));
         myModal.show();
     }
+
+    // 🚨 จุดสำคัญ: สั่งคำนวณความกว้างตารางใหม่เมื่อ Modal เปิดเสร็จ 100% 🚨
+    $('#detailModal').on('shown.bs.modal', function () {
+        $('#customerTable').DataTable().columns.adjust();
+    });
 
     init();
 </script>

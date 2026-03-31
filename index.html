@@ -247,55 +247,54 @@
   }
 
   // Load data from the Google Apps Script endpoint
-  async function loadData() {
-    showLoading(true);
+// Replace the current loadData() with this JSONP version
+async function loadData() {
+  showLoading(true);
+
+  // Clean up previous callback if any
+  if (window.__onGASData) {
+    try { delete window.__onGASData; } catch(e) { window.__onGASData = undefined; }
+  }
+
+  window.__onGASData = function(result) {
     try {
-      const url = `${GAS_URL}?action=getData&t=${Date.now()}`;
-      const response = await fetch(url, {
-        method: 'GET',
-        headers: { 'Accept': 'application/json' }
-      });
-
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
-
-      const result = await response.json();
-
       if (result && result.success) {
         masterData = Array.isArray(result.data) ? result.data : [];
         renderStats(result.summary || {});
         renderAlerts(masterData);
         renderBranchSummary(result.branchSummary || {});
         renderTable(masterData);
-
         const now = new Date();
         document.getElementById('lastUpdateText').innerText = now.toLocaleString('en-US');
       } else {
         const msg = (result && result.error) ? result.error : 'Unknown error from data source';
         alert('Failed to load data: ' + msg);
-        // Clear UI to avoid stale or broken layout
         renderStats({});
         renderAlerts([]);
         renderBranchSummary({});
         renderTable([]);
       }
-    } catch (error) {
-      console.error('Fetch error:', error);
-      alert(
-        'Unable to connect to the data source: ' + error.message +
-        '\n\nPlease verify that your Google Apps Script Web App is deployed and the GAS_URL is correct. ' +
-        'If the Web App should be publicly accessible, ensure the deployment access is set appropriately (e.g., "Anyone, even anonymous").'
-      );
-      // Clear UI when fetch fails
-      renderStats({});
-      renderAlerts([]);
-      renderBranchSummary({});
-      renderTable([]);
     } finally {
       showLoading(false);
+      const s = document.getElementById('__gas_jsonp_script');
+      if (s && s.parentNode) s.parentNode.removeChild(s);
+      try { delete window.__onGASData; } catch(e) { window.__onGASData = undefined; }
     }
-  }
+  };
+
+  const script = document.createElement('script');
+  script.id = '__gas_jsonp_script';
+  script.src = `${GAS_URL}?action=getData&callback=__onGASData&t=${Date.now()}`;
+  script.async = true;
+  script.onerror = function() {
+    showLoading(false);
+    alert('Network error while loading data (JSONP script failed). Please check GAS_URL and Web App deployment.');
+    if (window.__onGASData) { try { delete window.__onGASData; } catch(e) { window.__onGASData = undefined; } }
+    const s = document.getElementById('__gas_jsonp_script');
+    if (s && s.parentNode) s.parentNode.removeChild(s);
+  };
+  document.head.appendChild(script);
+}
 
   function renderStats(summary) {
     const grid = document.getElementById('statsGrid');
@@ -492,43 +491,44 @@
     });
   }
 
-  async function exportData() {
-    if (!Array.isArray(masterData) || masterData.length === 0) {
-      alert('No data available to export.');
-      return;
-    }
-    showLoading(true);
-    try {
-      const response = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action: 'export', data: masterData })
-      });
-      const result = await response.json();
-      if (result && result.success) {
-        alert(`✅ Export successful! Sheet name: ${result.sheetName}`);
-      } else {
-        alert('❌ Export failed: ' + (result && result.error ? result.error : 'Unknown error'));
-      }
-    } catch (error) {
-      console.error('Export error:', error);
-      alert('An error occurred during export: ' + error.message);
-    } finally {
-      showLoading(false);
-    }
+// Replace exportData() with this version that posts via a form and opens a new tab
+function exportData() {
+  if (!Array.isArray(masterData) || masterData.length === 0) {
+    alert('No data available to export.');
+    return;
   }
+  showLoading(true);
 
-  // Attach export button listener safely
-  const exportBtn = document.getElementById('exportBtn');
-  if (exportBtn) {
-    exportBtn.addEventListener('click', exportData);
-  } else {
-    // If element not yet in DOM (very unlikely since script at bottom), set listener on load
-    window.addEventListener('load', function() {
-      const btn = document.getElementById('exportBtn');
-      if (btn) btn.addEventListener('click', exportData);
-    });
+  try {
+    const payload = JSON.stringify({ action: 'export', data: masterData });
+
+    // Create a temporary form to POST and open result in a new tab
+    const form = document.createElement('form');
+    form.method = 'POST';
+    form.action = GAS_URL;
+    form.target = '_blank';
+    form.style.display = 'none';
+
+    const input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'payload';
+    input.value = payload;
+    form.appendChild(input);
+
+    document.body.appendChild(form);
+    form.submit();
+
+    setTimeout(() => {
+      try { document.body.removeChild(form); } catch(e) {}
+      showLoading(false);
+    }, 1500);
+
+  } catch (error) {
+    showLoading(false);
+    console.error('Export error:', error);
+    alert('An error occurred during export: ' + error.message);
   }
+}
 
   // Load data on window load
   window.addEventListener('load', loadData);

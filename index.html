@@ -6,87 +6,99 @@
     <title>Northern Farm | Executive Credit Intelligence</title>
     
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     
     <style>
-        :root { --navy: #0f172a; --blue: #2563eb; --slate: #64748b; --border: #e2e8f0; }
+        :root { --navy: #0f172a; --blue: #2563eb; --border: #e2e8f0; --danger-soft: #fff1f2; }
         body { background-color: #f8fafc; font-family: 'Inter', sans-serif; color: #1e293b; }
         
-        /* Nav & Cards */
-        .navbar { background: var(--navy); padding: 1rem 2rem; border-bottom: 3px solid var(--blue); }
-        .exec-card { border: none; border-radius: 12px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); transition: transform 0.2s; }
-        .exec-card:hover { transform: translateY(-3px); }
-        .card-label { font-size: 0.75rem; font-weight: 700; color: var(--slate); letter-spacing: 0.05em; }
+        /* Nav & Header */
+        .navbar { background: var(--navy); border-bottom: 4px solid var(--blue); padding: 1rem 2rem; }
         
-        /* Risk Alert Section */
-        .insight-box { border-left: 4px solid var(--blue); border-radius: 8px; background: #fff; padding: 1.5rem; margin-bottom: 2rem; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); }
-        .risk-item { border-bottom: 1px dashed var(--border); padding: 10px 0; display: flex; justify-content: space-between; align-items: center; }
-        .risk-item:last-child { border-bottom: none; }
+        /* KPI Cards */
+        .kpi-card { border: none; border-radius: 12px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #cbd5e1; }
+        .kpi-card.total { border-left-color: var(--blue); }
+        .kpi-card.risk { border-left-color: #ef4444; }
+        .kpi-card.security { border-left-color: #10b981; }
+        .kpi-label { font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 1px; }
 
-        /* Table Style */
-        .card-table { border: 1px solid var(--border); border-radius: 8px; background: #fff; overflow: hidden; }
-        .table thead th { background: #f1f5f9; color: #475569; font-size: 0.7rem; text-transform: uppercase; padding: 15px; border-bottom: 2px solid var(--border); }
-        .text-zero { color: #cbd5e1; }
+        /* Table Professional Look */
+        .card-main { border: 1px solid var(--border); border-radius: 12px; background: #fff; overflow: hidden; }
+        .table thead th { background: #f1f5f9; color: #475569; font-size: 0.7rem; text-transform: uppercase; padding: 16px; border-bottom: 2px solid var(--border); }
+        .table tbody td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; }
+        .row-link { cursor: pointer; transition: background 0.2s; }
+        .row-link:hover { background-color: #f8fafc !important; }
         
-        /* Modal Fix */
-        .modal-header { border-bottom: 1px solid var(--border); }
-        .dataTables_scroll { border: 1px solid var(--border); }
+        /* Value Coloring */
+        .text-zero { color: #cbd5e1; }
+        .val-overdue { color: #be123c; font-weight: 600; background-color: var(--danger-soft); }
+        
+        /* Modal & Scroll Fix */
+        .modal-header { border-bottom: 1px solid var(--border); background: #fff; }
+        .dataTables_scrollBody { border-bottom: 1px solid var(--border); }
+        
+        .loader-overlay { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body>
 
-<div id="loader" class="loader-overlay" style="position:fixed; inset:0; background:#fff; z-index:9999; display:flex; align-items:center; justify-content:center;">
-    <div class="spinner-border text-primary"></div>
+<div id="loader" class="loader-overlay">
+    <div class="spinner-border text-primary" role="status"></div>
+    <div class="mt-3 fw-bold text-muted small">SECURE DATA SYNCING...</div>
 </div>
 
-<nav class="navbar navbar-dark shadow-sm">
+<nav class="navbar navbar-dark mb-4 shadow-lg">
     <div class="container-fluid">
         <span class="navbar-brand d-flex align-items-center">
-            <i class="fa-solid fa-chart-line me-3 text-info"></i>
-            <strong>NORTHERN FARM | CREDIT EXECUTIVE</strong>
+            <i class="fa-solid fa-building-shield me-3 text-info"></i>
+            <div>
+                <div class="fw-bold fs-5 lh-1">Northern Farm</div>
+                <small class="opacity-75" style="font-size: 0.65rem; letter-spacing: 1px;">CREDIT RISK INTELLIGENCE</small>
+            </div>
         </span>
     </div>
 </nav>
 
-<div class="container-fluid px-4 py-4">
+<div class="container-fluid px-4">
     
-    <div class="row g-3 mb-4">
+    <div class="row g-4 mb-4">
         <div class="col-md-4">
-            <div class="exec-card p-4 border-bottom border-primary border-4">
-                <div class="card-label mb-1">TOTAL PORTFOLIO EXPOSURE</div>
-                <h2 id="cardTotalDebt" class="fw-bold mb-0">0</h2>
-                <small class="text-muted">Active outstanding balance</small>
+            <div class="kpi-card total p-4">
+                <div class="kpi-label">TOTAL PORTFOLIO VALUE</div>
+                <h2 id="kpiTotal" class="fw-bold mb-0 mt-1">0</h2>
+                <small class="text-muted">Aggregate Outstanding Balance</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="exec-card p-4 border-bottom border-danger border-4">
-                <div class="card-label mb-1 text-danger">TOTAL OVERDUE AMOUNT</div>
-                <h2 id="cardOverdue" class="fw-bold text-danger mb-0">0</h2>
-                <small class="text-muted">Receivables past due date</small>
+            <div class="kpi-card risk p-4">
+                <div class="kpi-label text-danger">CREDIT RISK EXPOSURE</div>
+                <h2 id="kpiRisk" class="fw-bold text-danger mb-0 mt-1">0</h2>
+                <small class="text-muted">Total Overdue Receivables</small>
             </div>
         </div>
         <div class="col-md-4">
-            <div class="exec-card p-4 border-bottom border-success border-4">
-                <div class="card-label mb-1 text-success">TOTAL SECURITY DEPOSIT</div>
-                <h2 id="cardDeposit" class="fw-bold text-success mb-0">0</h2>
-                <small class="text-muted">Total collateral held</small>
+            <div class="kpi-card security p-4">
+                <div class="kpi-label text-success">TOTAL SECURITY HELD</div>
+                <h2 id="kpiDeposit" class="fw-bold text-success mb-0 mt-1">0</h2>
+                <small class="text-muted">Customer Security Deposits</small>
             </div>
         </div>
     </div>
 
-    <div class="insight-box">
-        <h5 class="fw-bold mb-3 text-navy"><i class="fa-solid fa-magnifying-glass-chart me-2"></i>Executive Risk Insights</h5>
-        <div id="riskAnalysisContent">
-            </div>
+    <div class="card card-main border-0 bg-transparent mb-4">
+        <div class="p-3 bg-white rounded shadow-sm border-start border-4 border-info">
+            <h6 class="fw-bold mb-2"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Critical Exception Summary</h6>
+            <div id="execAnalysis" class="small text-secondary">Analyzing data patterns...</div>
+        </div>
     </div>
 
-    <div class="card-table shadow-sm">
-        <div class="p-3 border-bottom d-flex justify-content-between align-items-center bg-white">
-            <h6 class="mb-0 fw-bold"><i class="fa-solid fa-map-location-dot me-2"></i>Branch Performance Summary</h6>
-            <div id="branchTools"></div>
+    <div class="card-main shadow-sm">
+        <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
+            <h6 class="mb-0 fw-bold text-navy"><i class="fa-solid fa-list-check me-2"></i>BRANCH PERFORMANCE MATRIX</h6>
+            <div id="branchBtnGroup"></div>
         </div>
         <div class="table-responsive">
             <table id="branchTable" class="table table-hover align-middle w-100 mb-0">
@@ -96,10 +108,11 @@
                         <th>Area</th>
                         <th class="text-center">Customers</th>
                         <th class="text-end">Deposit</th>
-                        <th class="text-end text-primary">Balance</th>
+                        <th class="text-end">Balance</th>
                         <th class="text-end text-success">Undue</th>
                         <th class="text-end text-danger">Overdue</th>
                         <th class="text-center">Last Update</th>
+                        <th class="text-center">Action</th>
                     </tr>
                 </thead>
             </table>
@@ -110,22 +123,26 @@
 <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-fullscreen">
         <div class="modal-content">
-            <div class="modal-header px-4">
-                <h5 class="modal-title fw-bold text-primary">
-                    <i class="fa-solid fa-address-book me-2"></i>Branch: <span id="mBranchHeader"></span>
+            <div class="modal-header px-4 py-3 sticky-top shadow-sm">
+                <h5 class="modal-title d-flex align-items-center">
+                    <i class="fa-solid fa-users-viewfinder text-primary me-3 fs-4"></i>
+                    <div>
+                        <span id="mBranchName" class="fw-bold">Branch Name</span>
+                        <div class="small text-muted" style="font-size: 0.7rem;">DETAILED AGING REPORT</div>
+                    </div>
                 </h5>
-                <div class="d-flex align-items-center gap-3">
-                    <div id="custTools"></div>
+                <div class="d-flex align-items-center gap-2">
+                    <div id="custBtnGroup"></div>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
             </div>
-            <div class="modal-body bg-light p-4">
-                <div class="card-table shadow-sm">
-                    <table id="customerTable" class="table table-hover align-middle w-100 mb-0 small">
+            <div class="modal-body p-4 bg-light">
+                <div class="card-main">
+                    <table id="customerTable" class="table align-middle w-100 mb-0" style="font-size: 0.85rem;">
                         <thead class="table-dark">
                             <tr>
                                 <th>Code</th><th>Customer Name</th><th class="text-end">Deposit</th><th class="text-end">Total</th><th class="text-end">Undue</th><th class="text-end text-danger">Overdue</th>
-                                <th>1D</th><th>2D</th><th>3D</th><th>4D</th><th>5D</th><th>6D</th><th class="bg-primary">7-30D</th><th class="bg-danger text-white">30D+</th>
+                                <th>1D</th><th>2D</th><th>3D</th><th>4D</th><th>5D</th><th>6D</th><th class="bg-primary">7-30D</th><th class="bg-danger">30D+</th>
                             </tr>
                         </thead>
                     </table>
@@ -146,73 +163,59 @@
 
 <script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwA7MzcEy6DKirevQdBFWLOzKaxboATV1A_MkdgnoZUaiSjtU5_LXRGm5M9OgF38EVT/exec';
-    let rawData = [];
+    let fullData = [];
 
-    function f(v) { 
+    const f = (v) => {
         let n = Number(v || 0);
-        return n === 0 ? '<span class="text-zero">-</span>' : n.toLocaleString();
-    }
+        if (n === 0) return '<span class="text-zero">-</span>';
+        return n.toLocaleString();
+    };
 
     async function init() {
         try {
             const res = await fetch(API_URL, { redirect: 'follow' });
-            rawData = await res.json();
+            fullData = await res.json();
             
-            runAnalysis(rawData);
-            renderBranchTable(rawData);
+            updateKPIs(fullData);
+            renderMainTable(fullData);
             $('#loader').fadeOut();
         } catch (e) { alert('Sync Error'); }
     }
 
-    function runAnalysis(data) {
-        let overDepositAmt = 0, overDepositCount = 0;
-        let noDepositDebtAmt = 0, noDepositDebtCount = 0;
-        let totalDebt = 0, totalOvd = 0, totalDep = 0;
-        let criticalAgingAmt = 0;
+    function updateKPIs(data) {
+        let t = 0, r = 0, d = 0;
+        let overDepCount = 0, noDepCount = 0;
 
-        data.forEach(r => {
-            let d = Number(r.deposit || 0);
-            let t = Number(r.total || 0);
-            let o = Number(r.overdue || 0);
-            let o30 = Number(r.overdueOver30 || 0);
-
-            totalDebt += t; totalOvd += o; totalDep += d;
-
-            // 1. Total > Deposit
-            if (t > d) { overDepositCount++; overDepositAmt += (t - d); }
-            // 2. No Deposit and has debt
-            if (d === 0 && t > 0) { noDepositDebtCount++; noDepositDebtAmt += t; }
-            // 3. Critical > 30 Days
-            criticalAgingAmt += o30;
+        data.forEach(x => {
+            t += Number(x.total || 0);
+            r += Number(x.overdue || 0);
+            d += Number(x.deposit || 0);
+            if(Number(x.total) > Number(x.deposit)) overDepCount++;
+            if(Number(x.deposit) === 0 && Number(x.total) > 0) noDepCount++;
         });
 
-        // Set Top Cards
-        $('#cardTotalDebt').text(totalDebt.toLocaleString());
-        $('#cardOverdue').text(totalOvd.toLocaleString());
-        $('#cardDeposit').text(totalDep.toLocaleString());
+        $('#kpiTotal').text(t.toLocaleString());
+        $('#kpiRisk').text(r.toLocaleString());
+        $('#kpiDeposit').text(d.toLocaleString());
 
-        // Set Insights Text
-        const html = `
-            <div class="risk-item">
-                <span><i class="fa-solid fa-triangle-exclamation text-danger me-2"></i><strong>Exposure Above Deposit:</strong> The customer's debt exceeds their deposit <strong>${overDepositCount}</strong> ราย</span>
-                <span class="text-danger fw-bold">Risk Gap: ${overDepositAmt.toLocaleString()}</span>
+        $('#execAnalysis').html(`
+            <div class="row">
+                <div class="col-md-6 border-end">
+                    <i class="fa-solid fa-circle-exclamation text-danger me-2"></i> 
+                    <strong>Exposure Alert:</strong> <strong>${overDepCount}</strong> customers There is an outstanding debt exceeding the deposit.ำ
+                </div>
+                <div class="col-md-6 ps-4">
+                    <i class="fa-solid fa-shield-slash text-warning me-2"></i> 
+                    <strong>Security Risk:</strong> <strong>${noDepCount}</strong> customers There is an outstanding debt without a deposit.ำ
+                </div>
             </div>
-            <div class="risk-item">
-                <span><i class="fa-solid fa-user-shield text-warning me-2"></i><strong>Unsecured Debt:</strong> Customers with outstanding debt but no deposit <strong>${noDepositDebtCount}</strong> ราย</span>
-                <span class="text-warning fw-bold">Unsecured: ${noDepositDebtAmt.toLocaleString()}</span>
-            </div>
-            <div class="risk-item">
-                <span><i class="fa-solid fa-clock-rotate-left text-primary me-2"></i><strong>Critical Aging Analytics:</strong> Total outstanding balance over 30 days (Critical)</span>
-                <span class="text-dark fw-bold">${criticalAgingAmt.toLocaleString()}</span>
-            </div>
-        `;
-        $('#riskAnalysisContent').html(html);
+        `);
     }
 
-    function renderBranchTable(data) {
+    function renderMainTable(data) {
         const groups = {};
         data.forEach(r => {
-            if (!groups[r.branch]) groups[r.branch] = { name:r.branch, area:r.area, c:0, d:0, t:0, u:0, o:0, up: r.lastUpdate };
+            if (!groups[r.branch]) groups[r.branch] = { name: r.branch, area: r.area, c:0, d:0, t:0, u:0, o:0, up: r.lastUpdate };
             groups[r.branch].c++;
             groups[r.branch].d += Number(r.deposit || 0);
             groups[r.branch].t += Number(r.total || 0);
@@ -222,37 +225,45 @@
 
         const table = $('#branchTable').DataTable({
             data: Object.values(groups),
+            createdRow: function(row, data) {
+                $(row).addClass('row-link').on('click', () => openDetail(data.name));
+            },
             columns: [
-                { data: 'name', className: 'fw-bold text-primary', render: d => `<span style="cursor:pointer" onclick="openDetail('${d}')">${d}</span>` },
+                { data: 'name', className: 'fw-bold text-primary' },
                 { data: 'area' },
                 { data: 'c', className: 'text-center' },
                 { data: 'd', className: 'text-end', render: d => f(d) },
                 { data: 't', className: 'text-end fw-bold', render: d => f(d) },
-                { data: 'u', className: 'text-end', render: d => f(d) },
-                { data: 'o', className: 'text-end text-danger fw-bold', render: d => f(d) },
-                { data: 'up', className: 'text-center small text-muted' }
+                { data: 'u', className: 'text-end text-success', render: d => f(d) },
+                { data: 'o', className: 'text-end val-overdue', render: d => f(d) },
+                { data: 'up', className: 'text-center small text-muted' },
+                { className: 'text-center', render: () => `<button class="btn btn-sm btn-primary px-3">View</button>` }
             ],
             dom: 'Bfrtip',
-            buttons: [{ extend: 'excel', className: 'btn btn-sm btn-success', text: 'Export Summary' }]
+            buttons: [{ extend: 'excel', className: 'btn btn-sm btn-success', text: '<i class="fa-solid fa-file-excel me-1"></i> Excel' }]
         });
-        table.buttons().container().appendTo('#branchTools');
+        table.buttons().container().appendTo('#branchBtnGroup');
     }
 
-    function openDetail(branch) {
-        const filter = rawData.filter(x => x.branch === branch);
-        $('#mBranchHeader').text(branch);
+    function openDetail(branchName) {
+        const list = fullData.filter(x => x.branch === branchName);
+        $('#mBranchName').text(branchName);
 
         if ($.fn.DataTable.isDataTable('#customerTable')) $('#customerTable').DataTable().destroy();
 
         const cTable = $('#customerTable').DataTable({
-            data: filter,
+            data: list,
             scrollX: true,
+            scrollY: '65vh',
+            scrollCollapse: true,
+            paging: false,
             columns: [
-                { data: 'customerCode' }, { data: 'customerName' },
+                { data: 'customerCode', className: 'fw-bold' },
+                { data: 'customerName' },
                 { data: 'deposit', className: 'text-end', render: d => f(d) },
                 { data: 'total', className: 'text-end fw-bold', render: d => f(d) },
                 { data: 'undue', className: 'text-end', render: d => f(d) },
-                { data: 'overdue', className: 'text-end text-danger fw-bold', render: d => f(d) },
+                { data: 'overdue', className: 'text-end val-overdue', render: d => f(d) },
                 { data: 'overdue1', render: d => f(d) }, { data: 'overdue2', render: d => f(d) },
                 { data: 'overdue3', render: d => f(d) }, { data: 'overdue4', render: d => f(d) },
                 { data: 'overdue5', render: d => f(d) }, { data: 'overdue6', render: d => f(d) },
@@ -260,17 +271,17 @@
                 { data: 'overdueOver30', className: 'bg-danger bg-opacity-10 text-danger fw-bold', render: d => f(d) }
             ],
             dom: 'Bfrtip',
-            buttons: [{ extend: 'excel', className: 'btn btn-sm btn-success' }]
+            buttons: [{ extend: 'excel', className: 'btn btn-sm btn-success', text: 'Download Details' }]
         });
+
+        $('#custBtnGroup').empty();
+        cTable.buttons().container().appendTo('#custBtnGroup');
         
-        $('#custTools').empty();
-        cTable.buttons().container().appendTo('#custTools');
-        
-        const myModal = new bootstrap.Modal(document.getElementById('detailModal'));
-        myModal.show();
-        
+        const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+        modal.show();
+
         // 🚨 แก้ปัญหาหัวตารางเบี้ยว 🚨
-        setTimeout(() => { cTable.columns.adjust().draw(); }, 200);
+        setTimeout(() => { cTable.columns.adjust().draw(); }, 300);
     }
 
     init();

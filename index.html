@@ -1,537 +1,144 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Outstanding Debt Dashboard - Northern Farm Credit</title>
-
-  <!-- CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"/>
-  <link href="https://cdn.datatables.net/1.11.5/css/dataTables.bootstrap5.min.css" rel="stylesheet"/>
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet"/>
-
-  <!-- JS libs (jQuery required by DataTables) -->
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
-  <script src="https://cdn.datatables.net/1.11.5/js/dataTables.bootstrap5.min.js"></script>
-
-  <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body {
-      background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
-      font-family: 'Segoe UI', system-ui, -apple-system, 'Helvetica Neue', Arial;
-      padding: 20px;
-      min-height: 100vh;
-    }
-    .container-custom { max-width: 1600px; margin: 0 auto; }
-    .header-card {
-      background: white;
-      border-radius: 28px;
-      padding: 1.5rem 2rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 20px 35px -10px rgba(0,0,0,0.2);
-      border-bottom: 4px solid #ffc107;
-    }
-    .header-card h1 {
-      font-size: 1.9rem;
-      font-weight: 700;
-      background: linear-gradient(135deg, #1e3c72, #2a5298);
-      -webkit-background-clip: text;
-      background-clip: text;
-      color: transparent;
-      margin: 0;
-    }
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-      gap: 1.5rem;
-      margin-bottom: 2rem;
-    }
-    .stat-card {
-      background: white;
-      border-radius: 24px;
-      padding: 1.25rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-      transition: all 0.25s ease;
-      border-left: 5px solid;
-      cursor: default;
-    }
-    .stat-card:hover { transform: translateY(-4px); box-shadow: 0 16px 28px rgba(0,0,0,0.12); }
-    .stat-card .stat-icon { font-size: 2.2rem; margin-bottom: 0.75rem; }
-    .stat-card .stat-value { font-size: 2rem; font-weight: 800; line-height: 1.2; }
-    .stat-card .stat-label { color: #4b5563; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; }
-
-    .alert-section, .branch-section, .table-section {
-      background: white;
-      border-radius: 28px;
-      padding: 1.5rem;
-      margin-bottom: 2rem;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.08);
-    }
-    .alert-item {
-      padding: 0.9rem 1rem;
-      border-radius: 18px;
-      margin-bottom: 0.75rem;
-      border-left: 5px solid;
-      transition: 0.2s;
-    }
-    .alert-danger { background: #fff0f0; border-left-color: #dc2626; }
-    .alert-warning { background: #fff7e5; border-left-color: #f59e0b; }
-
-    .badge-debt { background: #dc2626; color: white; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; }
-    .badge-credit { background: #10b981; color: white; padding: 4px 12px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; }
-
-    .branch-card {
-      background: #f8fafc;
-      border-radius: 20px;
-      padding: 1rem;
-      transition: 0.2s;
-      height: 100%;
-      border: 1px solid #e2e8f0;
-    }
-    .branch-card:hover { background: #f1f5f9; transform: scale(0.98); }
-
-    .table-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      flex-wrap: wrap;
-      gap: 1rem;
-      margin-bottom: 1.5rem;
-    }
-    .search-box {
-      position: relative;
-      width: 280px;
-    }
-    .search-box input {
-      width: 100%;
-      padding: 10px 40px 10px 18px;
-      border-radius: 40px;
-      border: 1.5px solid #cbd5e1;
-      transition: 0.2s;
-    }
-    .search-box input:focus { border-color: #2a5298; outline: none; box-shadow: 0 0 0 3px rgba(42,82,152,0.2); }
-    .search-box i { position: absolute; right: 16px; top: 12px; color: #94a3b8; }
-
-    .btn-export {
-      background: linear-gradient(95deg, #1e3c72, #2a5298);
-      border: none;
-      padding: 8px 24px;
-      border-radius: 40px;
-      color: white;
-      font-weight: 600;
-      transition: 0.2s;
-    }
-    .btn-export:hover { transform: translateY(-2px); box-shadow: 0 6px 14px rgba(0,0,0,0.2); background: #0f2b4f; }
-
-    .loading-overlay {
-      position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 9999;
-      backdrop-filter: blur(2px);
-      display: none;
-    }
-    .spinner-border { width: 3rem; height: 3rem; }
-
-    footer { text-align: center; color: rgba(255,255,255,0.8); margin-top: 2rem; font-size: 0.8rem; }
-
-    @media (max-width: 640px) {
-      body { padding: 12px; }
-      .header-card h1 { font-size: 1.3rem; }
-      .stat-value { font-size: 1.5rem; }
-      .search-box { width: 100%; }
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debt Analysis Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.4/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.3.6/css/buttons.bootstrap5.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        .card { border: none; border-radius: 15px; box-shadow: 0 4px 15px rgba(0,0,0,0.05); margin-bottom: 20px; }
+        .stat-card { border-left: 5px solid #0d6efd; }
+        .nav-brand { font-weight: bold; color: #0d6efd !important; }
+    </style>
 </head>
 <body>
 
-<div class="loading-overlay" id="loadingOverlay" aria-hidden="true">
-  <div class="spinner-border text-light" role="status" aria-hidden="true"></div>
+<nav class="navbar navbar-light bg-white shadow-sm mb-4">
+    <div class="container-fluid">
+        <a class="navbar-brand nav-brand" href="#">Debt Management System</a>
+    </div>
+</nav>
+
+<div class="container-fluid">
+    <div class="row mb-4">
+        <div class="col-md-3">
+            <div class="card stat-card p-3">
+                <small class="text-muted">Total Balance</small>
+                <h3 id="totalBalance">0.00</h3>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card stat-card p-3" style="border-left-color: #dc3545;">
+                <small class="text-muted">Total Overdue</small>
+                <h3 id="totalOverdue" class="text-danger">0.00</h3>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card p-3">
+                <canvas id="debtChart" height="80"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="card p-4">
+        <div class="table-responsive">
+            <table id="debtTable" class="table table-hover w-100">
+                <thead class="table-light">
+                    <tr>
+                        <th>Branch</th>
+                        <th>Area</th>
+                        <th>Customer</th>
+                        <th>Total Debt</th>
+                        <th>Undue</th>
+                        <th>Overdue</th>
+                        <th>Over 30 Days</th>
+                        <th>Last Update</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </div>
+    </div>
 </div>
 
-<div class="container-custom">
-  <div class="header-card d-flex flex-wrap justify-content-between align-items-center">
-    <div>
-      <h1><i class="fas fa-chart-line me-2" style="color:#2a5298;"></i> Customer Outstanding Debt Analysis</h1>
-      <p class="text-muted mt-2 mb-0"><i class="far fa-clock"></i> Last updated: <span id="lastUpdateText">-</span></p>
-    </div>
-    <div class="mt-2 mt-sm-0">
-      <i class="fas fa-database me-1"></i> Northern Farm Credit
-    </div>
-  </div>
-
-  <div class="stats-grid" id="statsGrid" aria-live="polite"></div>
-
-  <div class="alert-section" id="alertSection">
-    <h5><i class="fas fa-bell me-2"></i> Important Alerts</h5>
-    <div id="alertsContainer">Loading...</div>
-  </div>
-
-  <div class="branch-section" id="branchSection">
-    <h5><i class="fas fa-store me-2"></i> Branch Summary</h5>
-    <div id="branchContainer" class="row g-3">Loading...</div>
-  </div>
-
-  <div class="table-section">
-    <div class="table-header">
-      <div class="search-box" role="search">
-        <input type="text" id="searchInput" placeholder="Search customer name, code, branch..." aria-label="Search table">
-        <i class="fas fa-search" aria-hidden="true"></i>
-      </div>
-      <button class="btn-export" id="exportBtn" type="button"><i class="fas fa-download me-1"></i> Export Data</button>
-    </div>
-
-    <div class="table-responsive">
-      <table id="debtTable" class="table table-hover align-middle" style="width:100%">
-        <thead class="table-light">
-          <tr>
-            <th>Customer Code</th>
-            <th>Customer Name</th>
-            <th>Branch</th>
-            <th>Area</th>
-            <th>Balance</th>
-            <th>Overdue</th>
-            <th>1 Day</th>
-            <th>2-3 Days</th>
-            <th>7-30 Days</th>
-            <th>>30 Days</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-        <tbody id="tableBody"></tbody>
-      </table>
-    </div>
-  </div>
-
-  <footer>Data provided by Northern Farm Credit | Real-time view via Google Sheets</footer>
-</div>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.4/js/dataTables.bootstrap5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/dataTables.buttons.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.bootstrap5.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.1.3/jszip.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.html5.min.js"></script>
+<script src="https://cdn.datatables.net/buttons/2.3.6/js/buttons.print.min.js"></script>
 
 <script>
-  // IMPORTANT: The GAS_URL below is kept as-is from your original file.
-  // Make sure the Google Apps Script is deployed as a Web App and accessible
-  // (for public access you may need "Anyone, even anonymous" depending on your use).
-  const GAS_URL = 'https://script.google.com/macros/s/AKfycbwA7MzcEy6DKirevQdBFWLOzKaxboATV1A_MkdgnoZUaiSjtU5_LXRGm5M9OgF38EVT/exec';
+    const API_URL = 'https://script.google.com/macros/s/AKfycbwA7MzcEy6DKirevQdBFWLOzKaxboATV1A_MkdgnoZUaiSjtU5_LXRGm5M9OgF38EVT/exec';
 
-  let masterData = [];
-  let dataTable = null;
-
-  function formatNumber(num) {
-    if (num === undefined || num === null) return '0';
-    const val = (typeof num === 'number') ? num : Number(num);
-    if (isNaN(val)) return '0';
-    return val.toLocaleString('en-US');
-  }
-
-  function showLoading(show) {
-    const overlay = document.getElementById('loadingOverlay');
-    if (!overlay) return;
-    overlay.style.display = show ? 'flex' : 'none';
-    overlay.setAttribute('aria-hidden', show ? 'false' : 'true');
-  }
-
-  function escapeHtml(str) {
-    if (str === undefined || str === null) return '';
-    if (typeof str !== 'string') str = String(str);
-    return str.replace(/[&<>"]/g, function (m) {
-      if (m === '&') return '&amp;';
-      if (m === '<') return '&lt;';
-      if (m === '>') return '&gt;';
-      if (m === '"') return '&quot;';
-      return m;
-    });
-  }
-
-  // Load data from the Google Apps Script endpoint
-// Replace the current loadData() with this JSONP version
-async function loadData() {
-  showLoading(true);
-
-  // Clean up previous callback if any
-  if (window.__onGASData) {
-    try { delete window.__onGASData; } catch(e) { window.__onGASData = undefined; }
-  }
-
-  window.__onGASData = function(result) {
-    try {
-      if (result && result.success) {
-        masterData = Array.isArray(result.data) ? result.data : [];
-        renderStats(result.summary || {});
-        renderAlerts(masterData);
-        renderBranchSummary(result.branchSummary || {});
-        renderTable(masterData);
-        const now = new Date();
-        document.getElementById('lastUpdateText').innerText = now.toLocaleString('en-US');
-      } else {
-        const msg = (result && result.error) ? result.error : 'Unknown error from data source';
-        alert('Failed to load data: ' + msg);
-        renderStats({});
-        renderAlerts([]);
-        renderBranchSummary({});
-        renderTable([]);
-      }
-    } finally {
-      showLoading(false);
-      const s = document.getElementById('__gas_jsonp_script');
-      if (s && s.parentNode) s.parentNode.removeChild(s);
-      try { delete window.__onGASData; } catch(e) { window.__onGASData = undefined; }
-    }
-  };
-
-  const script = document.createElement('script');
-  script.id = '__gas_jsonp_script';
-  script.src = `${GAS_URL}?action=getData&callback=__onGASData&t=${Date.now()}`;
-  script.async = true;
-  script.onerror = function() {
-    showLoading(false);
-    alert('Network error while loading data (JSONP script failed). Please check GAS_URL and Web App deployment.');
-    if (window.__onGASData) { try { delete window.__onGASData; } catch(e) { window.__onGASData = undefined; } }
-    const s = document.getElementById('__gas_jsonp_script');
-    if (s && s.parentNode) s.parentNode.removeChild(s);
-  };
-  document.head.appendChild(script);
-}
-
-  function renderStats(summary) {
-    const grid = document.getElementById('statsGrid');
-    if (!grid) return;
-
-    const totalCustomers = Number(summary.totalCustomers) || 0;
-    const totalBalance = Number(summary.totalBalance) || 0;
-    const totalOverdue = Math.abs(Number(summary.totalOverdue) || 0);
-    const customersWithDebt = Number(summary.customersWithDebt) || 0;
-
-    grid.innerHTML = `
-      <div class="stat-card" style="border-left-color:#3b82f6">
-        <div class="stat-icon"><i class="fas fa-users"></i></div>
-        <div class="stat-value">${formatNumber(totalCustomers)}</div>
-        <div class="stat-label">Total Customers</div>
-      </div>
-
-      <div class="stat-card" style="border-left-color:#f59e0b">
-        <div class="stat-icon"><i class="fas fa-wallet"></i></div>
-        <div class="stat-value">${formatNumber(totalBalance)}</div>
-        <div class="stat-label">Total Balance</div>
-      </div>
-
-      <div class="stat-card" style="border-left-color:#ef4444">
-        <div class="stat-icon"><i class="fas fa-exclamation-triangle"></i></div>
-        <div class="stat-value">${formatNumber(totalOverdue)}</div>
-        <div class="stat-label">Total Overdue</div>
-      </div>
-
-      <div class="stat-card" style="border-left-color:#10b981">
-        <div class="stat-icon"><i class="fas fa-chart-simple"></i></div>
-        <div class="stat-value">${formatNumber(customersWithDebt)}</div>
-        <div class="stat-label">Customers with Debt</div>
-      </div>
-    `;
-  }
-
-  function renderAlerts(data) {
-    const container = document.getElementById('alertsContainer');
-    if (!container) return;
-
-    // Defensive: ensure data is an array
-    const list = Array.isArray(data) ? data : [];
-
-    // Business logic: original code used negative numbers for debts; keep same threshold logic
-    const highRisk = list.filter(c => Number(c.over30Days || 0) < -500000);
-    const urgent = list.filter(c => Number(c.days7to30 || 0) < -300000);
-    const overdueCount = list.filter(c => Number(c.overdue || 0) < 0).length;
-
-    let alertHtml = '';
-
-    if (highRisk.length) {
-      alertHtml += `
-        <div class="alert-item alert-danger" role="alert">
-          <i class="fas fa-skull-crossbones me-2"></i>
-          <strong>High Risk Customers:</strong> ${escapeHtml(String(highRisk.length))} customers have >30-day balances beyond threshold.
-        </div>
-      `;
+    async function fetchData() {
+        try {
+            const response = await fetch(API_URL);
+            const data = await response.json();
+            
+            updateDashboard(data);
+            renderTable(data);
+            renderChart(data);
+        } catch (error) {
+            console.error('Error:', error);
+            alert('Failed to load data.');
+        }
     }
 
-    if (urgent.length) {
-      alertHtml += `
-        <div class="alert-item alert-warning" role="alert">
-          <i class="fas fa-bell me-2"></i>
-          <strong>Urgent Follow-up Required:</strong> ${escapeHtml(String(urgent.length))} customers have 7-30 day balances beyond threshold.
-        </div>
-      `;
+    function updateDashboard(data) {
+        let total = data.reduce((sum, row) => sum + parseFloat(row.total || 0), 0);
+        let overdue = data.reduce((sum, row) => sum + parseFloat(row.overdue || 0), 0);
+        document.getElementById('totalBalance').innerText = total.toLocaleString();
+        document.getElementById('totalOverdue').innerText = overdue.toLocaleString();
     }
 
-    if (overdueCount > 0 && !highRisk.length && !urgent.length) {
-      alertHtml += `
-        <div class="alert-item" role="status">
-          <i class="fas fa-chart-line me-2"></i>
-          There are ${escapeHtml(String(overdueCount))} customers with overdue balances. Please review.
-        </div>
-      `;
+    function renderTable(data) {
+        $('#debtTable').DataTable({
+            data: data,
+            columns: [
+                { data: 'branch' },
+                { data: 'area' },
+                { data: 'customerName' },
+                { data: 'total', render: $.fn.dataTable.render.number(',', '.', 2) },
+                { data: 'undue', render: $.fn.dataTable.render.number(',', '.', 2) },
+                { data: 'overdue', render: $.fn.dataTable.render.number(',', '.', 2) },
+                { data: 'overdueOver30', render: $.fn.dataTable.render.number(',', '.', 2) },
+                { data: 'lastUpdate' }
+            ],
+            dom: 'Bfrtip',
+            buttons: ['copy', 'excel', 'print'],
+            order: [[5, 'desc']] // Sort by Overdue by default
+        });
     }
 
-    if (!alertHtml) {
-      alertHtml = `
-        <div class="alert-item" role="status">
-          <i class="fas fa-check-circle text-success me-2"></i>
-          No special alerts at this time.
-        </div>
-      `;
+    function renderChart(data) {
+        const ctx = document.getElementById('debtChart').getContext('2d');
+        const branchNames = [...new Set(data.map(d => d.branch))];
+        const debtByBranch = branchNames.map(b => 
+            data.filter(d => d.branch === b).reduce((s, r) => s + parseFloat(r.total), 0)
+        );
+
+        new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: branchNames,
+                datasets: [{
+                    label: 'Total Debt by Branch',
+                    data: debtByBranch,
+                    backgroundColor: '#0d6efd'
+                }]
+            },
+            options: { responsive: true }
+        });
     }
 
-    container.innerHTML = alertHtml;
-  }
-
-  function renderBranchSummary(branchMap) {
-    const container = document.getElementById('branchContainer');
-    if (!container) return;
-
-    if (!branchMap || Object.keys(branchMap).length === 0) {
-      container.innerHTML = '<div class="col-12 text-muted">No branch data available</div>';
-      return;
-    }
-
-    let html = '';
-    for (const [branch, info] of Object.entries(branchMap)) {
-      if (branch === 'N/A') continue;
-      const totalBalance = Number(info.totalBalance) || 0;
-      const customers = Number(info.customers) || 0;
-      const area = info.area ? escapeHtml(String(info.area)) : '-';
-      const balanceClass = totalBalance < 0 ? 'text-danger' : 'text-success';
-
-      html += `
-        <div class="col-md-3 col-sm-6">
-          <div class="branch-card">
-            <div class="d-flex justify-content-between align-items-start">
-              <div>
-                <i class="fas fa-building me-1"></i>
-                <strong>${escapeHtml(String(branch))}</strong>
-                <div class="text-muted small">${area}</div>
-              </div>
-              <div class="${balanceClass} text-end">
-                <div style="font-weight:700">${formatNumber(totalBalance)}</div>
-                <div class="small text-muted">${formatNumber(customers)} customers</div>
-              </div>
-            </div>
-          </div>
-        </div>
-      `;
-    }
-    container.innerHTML = html;
-  }
-
-  function renderTable(data) {
-    const tbody = document.getElementById('tableBody');
-    if (!tbody) return;
-
-    // Defensive conversion
-    const rows = Array.isArray(data) ? data : [];
-    tbody.innerHTML = '';
-
-    for (const row of rows) {
-      const balance = Number(row.balance) || 0;
-      const overdueVal = Math.abs(Number(row.overdue) || 0);
-      const day1Val = Math.abs(Number(row.day1) || 0);
-      const day2Val = Math.abs(Number(row.day2) || 0);
-      const day3Val = Math.abs(Number(row.day3) || 0);
-      const day23 = day2Val + day3Val;
-      const days7_30 = Math.abs(Number(row.days7to30) || 0);
-      const over30 = Math.abs(Number(row.over30Days) || 0);
-
-      const statusBadge = balance < 0 ? '<span class="badge-debt">In Debt</span>' : '<span class="badge-credit">Credit</span>';
-      const balanceClass = balance < 0 ? 'text-danger fw-bold' : 'text-success';
-
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td>${escapeHtml(row.customerCode)}</td>
-        <td class="fw-semibold">${escapeHtml(row.customerName)}</td>
-        <td>${escapeHtml(row.branch)}</td>
-        <td>${escapeHtml(row.area)}</td>
-        <td class="${balanceClass}">${formatNumber(balance)}</td>
-        <td class="text-danger">${formatNumber(overdueVal)}</td>
-        <td>${formatNumber(day1Val)}</td>
-        <td>${formatNumber(day23)}</td>
-        <td>${formatNumber(days7_30)}</td>
-        <td class="text-danger fw-bold">${formatNumber(over30)}</td>
-        <td>${statusBadge}</td>
-      `;
-      tbody.appendChild(tr);
-    }
-
-    // Destroy existing DataTable instance safely if it exists
-    try {
-      if ($.fn.dataTable && $.fn.dataTable.isDataTable && $.fn.dataTable.isDataTable('#debtTable')) {
-        $('#debtTable').DataTable().destroy();
-        // Remove DataTables added classes that can remain after destroy (optional)
-        $('#debtTable').find('thead th').removeClass('sorting sorting_asc sorting_desc');
-      }
-    } catch (err) {
-      console.warn('Error while destroying DataTable:', err);
-    }
-
-    // Initialize DataTable
-    dataTable = $('#debtTable').DataTable({
-      pageLength: 25,
-      order: [[4, 'asc']], // order by Balance ascending
-      language: {
-        search: "", // using external search input
-        lengthMenu: "Show _MENU_ entries",
-        info: "Showing _START_ - _END_ of _TOTAL_",
-        paginate: { next: "Next", previous: "Previous" }
-      },
-      columnDefs: [{ orderable: false, targets: [10] }]
-    });
-
-    // Wire external search input to DataTable search
-    $('#searchInput').off('keyup').on('keyup', function () {
-      if (dataTable) dataTable.search(this.value).draw();
-    });
-  }
-
-// Replace exportData() with this version that posts via a form and opens a new tab
-function exportData() {
-  if (!Array.isArray(masterData) || masterData.length === 0) {
-    alert('No data available to export.');
-    return;
-  }
-  showLoading(true);
-
-  try {
-    const payload = JSON.stringify({ action: 'export', data: masterData });
-
-    // Create a temporary form to POST and open result in a new tab
-    const form = document.createElement('form');
-    form.method = 'POST';
-    form.action = GAS_URL;
-    form.target = '_blank';
-    form.style.display = 'none';
-
-    const input = document.createElement('input');
-    input.type = 'hidden';
-    input.name = 'payload';
-    input.value = payload;
-    form.appendChild(input);
-
-    document.body.appendChild(form);
-    form.submit();
-
-    setTimeout(() => {
-      try { document.body.removeChild(form); } catch(e) {}
-      showLoading(false);
-    }, 1500);
-
-  } catch (error) {
-    showLoading(false);
-    console.error('Export error:', error);
-    alert('An error occurred during export: ' + error.message);
-  }
-}
-
-  // Load data on window load
-  window.addEventListener('load', loadData);
+    fetchData();
 </script>
 </body>
 </html>

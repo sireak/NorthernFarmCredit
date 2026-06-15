@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="th">
  <head>
-  <script src="/_sdk/telemetry_sdk.js"></script>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Northern Farm | Executive Credit Intelligence</title>
@@ -10,7 +9,6 @@
   <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
   <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <style>
         * { font-family: 'DM Sans', sans-serif; }
         body { background: #0c1222; min-height: 100vh; }
@@ -44,14 +42,13 @@
         .kpi-card.security::before { background: linear-gradient(90deg, #10b981, #34d399); }
 
         .table-container {
-            background: #0f172a; /* พื้นหลังเข้มทึบไม่โปร่งแสง */
+            background: #0f172a;
             border: 1px solid rgba(255,255,255,0.15);
             border-radius: 16px;
             overflow: hidden;
             box-shadow: 0 8px 20px rgba(0,0,0,0.4);
         }
 
-        /* แก้ไขหัวตารางหลัก - พื้นหลังเข้ม ตัวหนังสือขาวชัด */
         #branchTable thead th {
             background: #0a0f1c !important;
             color: #ffffff !important;
@@ -63,7 +60,6 @@
             font-weight: 700;
         }
         
-        /* แก้ไขเนื้อหาในตารางหลัก - พื้นหลังเข้ม ตัวหนังสือขาวสด */
         #branchTable {
             background-color: #111827 !important;
         }
@@ -82,11 +78,7 @@
         #branchTable tbody tr:hover td {
             background-color: #1e293b !important;
         }
-        #branchTable tbody tr:hover {
-            background-color: #1e293b !important;
-        }
 
-        /* ปรับสีตัวเลขให้เด่นชัด */
         .text-zero { color: #9ca3af !important; font-weight: 400; }
         .val-overdue { color: #fca5a5 !important; font-weight: 700; }
 
@@ -107,7 +99,6 @@
         }
         @keyframes spin { to { transform: rotate(360deg); } }
 
-        /* ปรับแต่ง DataTables controls */
         .dataTables_wrapper .dataTables_filter input {
             background: rgba(255,255,255,0.12) !important;
             border: 1px solid rgba(255,255,255,0.25) !important;
@@ -150,7 +141,6 @@
             color: #6ee7b7 !important;
         }
 
-        /* Modal & Customer Table ความคมชัดสูง - พื้นหลังเข้ม ตัวหนังสือขาว */
         .modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); }
         .modal-header { background: #0f172a; border-bottom: 1px solid #1e293b; }
         .modal-body { background: #0c1222; }
@@ -198,24 +188,15 @@
             border-bottom: 1px solid rgba(255,255,255,0.08);
         }
         
-        /* ปรับแต่ง scrollbar ให้สวยงาม */
-        .table-responsive::-webkit-scrollbar {
-            height: 8px;
-            width: 8px;
-        }
-        .table-responsive::-webkit-scrollbar-track {
-            background: #1e293b;
-            border-radius: 4px;
-        }
-        .table-responsive::-webkit-scrollbar-thumb {
-            background: #475569;
-            border-radius: 4px;
-        }
-        .table-responsive::-webkit-scrollbar-thumb:hover {
-            background: #64748b;
+        .badge-custom {
+            background: rgba(59,130,246,0.3);
+            color: #93c5fd;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
         }
         
-        /* ปรับแต่ง select dropdown */
         #areaFilter {
             background: #1e293b !important;
             border: 1px solid #334155 !important;
@@ -228,77 +209,93 @@
             color: #f1f5f9 !important;
         }
         
-        /* ปรับ badge ในตาราง */
-        .badge-custom {
-            background: rgba(59,130,246,0.3);
-            color: #93c5fd;
-            font-weight: 600;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 0.75rem;
+        /* ไอคอนแบบ SVG แทน Lucide */
+        .icon-svg {
+            width: 18px;
+            height: 18px;
+            display: inline-block;
+            background-size: contain;
+            background-repeat: no-repeat;
+            background-position: center;
+            filter: brightness(0) invert(1);
         }
     </style>
-  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
-  <script src="/_sdk/resizing_sdk.js" type="text/javascript"></script>
  </head>
- <body data-template-id="__page-root">
+ <body>
   <div id="loader" class="loader-overlay">
    <div class="pulse-ring"></div>
    <div class="mt-4 text-slate-400 text-xs font-semibold tracking-widest">
      SECURE DATA SYNCING
    </div>
   </div>
+  
   <nav class="nav-bar px-6 py-4 mb-6 sticky-top">
    <div class="d-flex align-items-center gap-3">
-    <div class="p-2 rounded-xl" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);"><i data-lucide="shield-check" style="width:22px;height:22px;color:#fff;"></i>
+    <div class="p-2 rounded-xl" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);">
+     <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M12 8v4"/><path d="M12 16h.01"/></svg>
     </div>
     <div>
-     <h1 data-template-id="brand-title" class="canva-text fw-bold text-white mb-0 lh-1" style="font-size:1.2rem;">Northern Farm</h1>
-     <p data-template-id="brand-subtitle" class="canva-text mb-0" style="font-size:0.6rem; color:#94a3b8; letter-spacing:2px;">EXECUTIVE CREDIT INTELLIGENCE</p>
+     <h1 class="fw-bold text-white mb-0 lh-1" style="font-size:1.2rem;">Northern Farm</h1>
+     <p class="mb-0" style="font-size:0.6rem; color:#94a3b8; letter-spacing:2px;">EXECUTIVE CREDIT INTELLIGENCE</p>
     </div>
    </div>
   </nav>
+  
   <main class="container-fluid px-4 pb-5">
    <div class="row g-4 mb-5">
     <div class="col-md-4">
      <div class="kpi-card total p-4">
-      <div class="d-flex align-items-center gap-2 mb-2"><i data-lucide="wallet" style="width:16px;height:16px;color:#60a5fa;"></i> <span data-template-id="kpi-total-label" class="canva-text" style="font-size:0.65rem; font-weight:700; color:#94a3b8; letter-spacing:1.5px;">TOTAL OUTSTANDING BALANCE</span>
+      <div class="d-flex align-items-center gap-2 mb-2">
+       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><rect x="2" y="6" width="20" height="16" rx="2"/><path d="M2 12h20"/><path d="M7 2v4"/><path d="M17 2v4"/></svg>
+       <span style="font-size:0.65rem; font-weight:700; color:#94a3b8; letter-spacing:1.5px;">TOTAL OUTSTANDING BALANCE</span>
       </div>
-      <h2 id="kpiTotal" class="fw-bold text-white mb-1" style="font-size:1.8rem;">0</h2><small data-template-id="kpi-total-sub" class="canva-text" style="color:#94a3b8; font-size:0.7rem;">รวมยอดลูกหนี้คงเหลือทั้งหมด</small>
+      <h2 id="kpiTotal" class="fw-bold text-white mb-1" style="font-size:1.8rem;">0</h2>
+      <small style="color:#94a3b8; font-size:0.7rem;">รวมยอดลูกหนี้คงเหลือทั้งหมด</small>
      </div>
     </div>
     <div class="col-md-4">
      <div class="kpi-card risk p-4">
-      <div class="d-flex align-items-center gap-2 mb-2"><i data-lucide="alert-triangle" style="width:16px;height:16px;color:#f87171;"></i> <span data-template-id="kpi-risk-label" class="canva-text" style="font-size:0.65rem; font-weight:700; color:#ef4444; letter-spacing:1.5px;">TOTAL RISK OVERDUE</span>
+      <div class="d-flex align-items-center gap-2 mb-2">
+       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/></svg>
+       <span style="font-size:0.65rem; font-weight:700; color:#ef4444; letter-spacing:1.5px;">TOTAL RISK OVERDUE</span>
       </div>
-      <h2 id="kpiRisk" class="fw-bold mb-1" style="font-size:1.8rem; color:#fca5a5;">0</h2><small data-template-id="kpi-risk-sub" class="canva-text" style="color:#94a3b8; font-size:0.7rem;">ยอดค้างชำระเกินกำหนดรวม</small>
+      <h2 id="kpiRisk" class="fw-bold mb-1" style="font-size:1.8rem; color:#fca5a5;">0</h2>
+      <small style="color:#94a3b8; font-size:0.7rem;">ยอดค้างชำระเกินกำหนดรวม</small>
      </div>
     </div>
     <div class="col-md-4">
      <div class="kpi-card security p-4">
-      <div class="d-flex align-items-center gap-2 mb-2"><i data-lucide="lock" style="width:16px;height:16px;color:#34d399;"></i> <span data-template-id="kpi-security-label" class="canva-text" style="font-size:0.65rem; font-weight:700; color:#10b981; letter-spacing:1.5px;">TOTAL COLLATERAL DEPOSIT</span>
+      <div class="d-flex align-items-center gap-2 mb-2">
+       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#34d399" stroke-width="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+       <span style="font-size:0.65rem; font-weight:700; color:#10b981; letter-spacing:1.5px;">TOTAL COLLATERAL DEPOSIT</span>
       </div>
-      <h2 id="kpiDeposit" class="fw-bold mb-1" style="font-size:1.8rem; color:#6ee7b7;">0</h2><small data-template-id="kpi-security-sub" class="canva-text" style="color:#94a3b8; font-size:0.7rem;">เงินค้ำประกัน/มัดจำทั้งหมด</small>
+      <h2 id="kpiDeposit" class="fw-bold mb-1" style="font-size:1.8rem; color:#6ee7b7;">0</h2>
+      <small style="color:#94a3b8; font-size:0.7rem;">เงินค้ำประกัน/มัดจำทั้งหมด</small>
      </div>
     </div>
    </div>
+   
    <div class="insight-card p-4 mb-5">
-    <div class="d-flex align-items-center gap-2 mb-2"><i data-lucide="lightbulb" style="width:18px;height:18px;color:#fbbf24;"></i> <span data-template-id="insight-title" class="canva-text fw-bold" style="color:#fbbf24; font-size:0.8rem;">EXECUTIVE CREDIT INSIGHTS ANALYSIS</span>
+    <div class="d-flex align-items-center gap-2 mb-2">
+     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" stroke-width="2"><path d="M9 18l6-6-6-6"/><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/></svg>
+     <span class="fw-bold" style="color:#fbbf24; font-size:0.8rem;">EXECUTIVE CREDIT INSIGHTS ANALYSIS</span>
     </div>
     <div id="execAnalysis" class="text-slate-300" style="font-size:0.8rem;">
       Analyzing data patterns...
     </div>
    </div>
+   
    <div class="table-container">
     <div class="p-4 d-flex justify-content-between align-items-center" style="border-bottom:1px solid #1e293b;">
-     <div class="d-flex align-items-center gap-2"><i data-lucide="layout-grid" style="width:18px;height:18px;color:#60a5fa;"></i>
-      <h6 data-template-id="table-title" class="canva-text mb-0 fw-bold" style="color:#f1f5f9; font-size:0.85rem;">BRANCH CREDIT AGING OVERVIEW</h6>
+     <div class="d-flex align-items-center gap-2">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
+      <h6 class="mb-0 fw-bold" style="color:#f1f5f9; font-size:0.85rem;">BRANCH CREDIT AGING OVERVIEW</h6>
      </div>
      <div class="d-flex align-items-center gap-3">
       <div>
        <label for="areaFilter" style="font-size:0.75rem; color:#cbd5e1; display:block; margin-bottom:4px; font-weight:500;">Filter by Area</label> 
-       <select id="areaFilter" class="form-select form-select-sm" style="background:#1e293b; border:1px solid #334155; color:#ffffff; border-radius:8px; font-size:0.75rem; padding:6px 10px; width:150px; cursor:pointer;"> 
-         <option value="" style="background:#0f172a; color:#fff;">All Areas</option> 
+       <select id="areaFilter" class="form-select form-select-sm"> 
+         <option value="">All Areas</option> 
        </select>
       </div>
       <div id="branchBtnGroup"></div>
@@ -327,20 +324,22 @@
     </div>
    </div>
   </main>
+  
   <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
    <div class="modal-dialog modal-fullscreen">
     <div class="modal-content">
      <div class="modal-header px-4 py-3 sticky-top">
       <h5 class="modal-title d-flex align-items-center gap-3">
-       <div class="p-2 rounded-lg" style="background:rgba(59,130,246,0.15);"><i data-lucide="users" style="width:20px;height:20px;color:#60a5fa;"></i>
+       <div class="p-2 rounded-lg" style="background:rgba(59,130,246,0.15);">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#60a5fa" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
        </div>
        <div><span id="mBranchName" class="fw-bold text-white">Branch</span>
-        <div class="text-slate-400" style="font-size:0.65rem; letter-spacing:1.5px;">
-          DETAILED AGING REPORT
-        </div>
-       </div></h5>
+        <div class="text-slate-400" style="font-size:0.65rem; letter-spacing:1.5px;">DETAILED AGING REPORT</div>
+       </div>
+      </h5>
       <div class="d-flex align-items-center gap-2">
-       <div id="custBtnGroup"></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+       <div id="custBtnGroup"></div>
+       <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
       </div>
      </div>
      <div class="modal-body p-4">
@@ -367,13 +366,14 @@
           </thead>
           <tbody>
           </tbody>
-         </table>
+        </table>
        </div>
       </div>
      </div>
     </div>
    </div>
   </div>
+  
   <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -382,193 +382,191 @@
   <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
   <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-  <script src="/_sdk/editing_sdk.js"></script>
+  
   <script>
-    lucide.createIcons();
+    // รอให้ DOM โหลดเสร็จก่อน
+    $(document).ready(function() {
+        const API_URL = 'https://script.google.com/macros/s/AKfycbwA7MzcEy6DKirevQdBFWLOzKaxboATV1A_MkdgnoZUaiSjtU5_LXRGm5M9OgF38EVT/exec';
+        let fullData = [];
+        let mainTable;
 
-    const API_URL = 'https://script.google.com/macros/s/AKfycbwA7MzcEy6DKirevQdBFWLOzKaxboATV1A_MkdgnoZUaiSjtU5_LXRGm5M9OgF38EVT/exec';
-    let fullData = [];
-    let mainTable;
+        const f = (v) => {
+            let n = Number(v || 0);
+            if (n === 0 || isNaN(n)) return '<span class="text-zero">-</span>';
+            return n.toLocaleString();
+        };
 
-    const f = (v) => {
-        let n = Number(v || 0);
-        if (n === 0) return '<span class="text-zero">-</span>';
-        return n.toLocaleString();
-    };
-
-    async function init() {
-        try {
-            const res = await fetch(API_URL, { redirect: 'follow' });
-            fullData = await res.json();
-            updateKPIs(fullData);
-            renderMainTable(fullData);
-            $('#loader').fadeOut(400);
-        } catch (e) {
-            $('#loader').html('<div class="text-danger text-center"><i data-lucide="wifi-off" style="width:40px;height:40px;"></i><p class="mt-3 fw-bold">Connection Error</p><p class="text-slate-500 small">Unable to sync data. Please refresh.</p></div>');
-            lucide.createIcons();
-        }
-    }
-
-    function updateKPIs(data) {
-        let t = 0, r = 0, d = 0, overDepCount = 0, noDepCount = 0;
-        data.forEach(x => {
-            t += Number(x.total || 0);
-            r += Number(x.overdue || 0);
-            d += Number(x.deposit || 0);
-            if (Number(x.total) > Number(x.deposit)) overDepCount++;
-            if (Number(x.deposit) === 0 && Number(x.total) > 0) noDepCount++;
-        });
-
-        $('#kpiTotal').text(t.toLocaleString());
-        $('#kpiRisk').text(r.toLocaleString());
-        $('#kpiDeposit').text(d.toLocaleString());
-
-        $('#execAnalysis').html(`
-            <div class="row g-3">
-                <div class="col-md-6">
-                    <div class="d-flex align-items-start gap-2">
-                        <i data-lucide="alert-circle" style="width:16px;height:16px;color:#ef4444;flex-shrink:0;margin-top:2px;"></i>
-                        <div><strong class="text-red-300">Exposure Alert:</strong> <strong class="text-white">${overDepCount}</strong> <span class="text-slate-300">ลูกค้ามียอดหนี้เกินวงเงินค้ำประกัน</span></div>
-                    </div>
-                </div>
-                <div class="col-md-6">
-                    <div class="d-flex align-items-start gap-2">
-                        <i data-lucide="shield-off" style="width:16px;height:16px;color:#f59e0b;flex-shrink:0;margin-top:2px;"></i>
-                        <div><strong class="text-amber-300">Security Risk:</strong> <strong class="text-white">${noDepCount}</strong> <span class="text-slate-300">ลูกค้ามียอดหนี้โดยไม่มีเงินค้ำประกัน</span></div>
-                    </div>
-                </div>
-            </div>
-        `);
-        lucide.createIcons();
-    }
-
-    function processGroupData(data) {
-        const groups = {};
-        data.forEach(r => {
-            if (!groups[r.branch]) {
-                groups[r.branch] = { 
-                    name: r.branch, 
-                    area: r.area, 
-                    c: 0, d: 0, t: 0, u: 0, 
-                    o1_3: 0, o4_7: 0, o8_30: 0, oOver30: 0,
-                    up: r.lastUpdate 
-                };
+        async function init() {
+            try {
+                const res = await fetch(API_URL, { redirect: 'follow' });
+                fullData = await res.json();
+                updateKPIs(fullData);
+                renderMainTable(fullData);
+                $('#loader').fadeOut(400);
+            } catch (e) {
+                console.error('Error:', e);
+                $('#loader').html('<div class="text-danger text-center"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg><p class="mt-3 fw-bold">Connection Error</p><p class="text-slate-500 small">Unable to sync data. Please refresh.</p></div>');
             }
-            groups[r.branch].c++;
-            groups[r.branch].d += Number(r.deposit || 0);
-            groups[r.branch].t += Number(r.total || 0);
-            groups[r.branch].u += Number(r.undue || 0);
-            groups[r.branch].o1_3 += Number(r.overdue1 || 0) + Number(r.overdue2 || 0) + Number(r.overdue3 || 0);
-            groups[r.branch].o4_7 += Number(r.overdue4 || 0) + Number(r.overdue5 || 0) + Number(r.overdue6 || 0);
-            groups[r.branch].o8_30 += Number(r.overdue7_30 || 0);
-            groups[r.branch].oOver30 += Number(r.overdueOver30 || 0);
-        });
-        return Object.values(groups);
-    }
-
-    function renderMainTable(data) {
-        const allAreas = new Set();
-        data.forEach(r => { if (r.area) allAreas.add(r.area); });
-
-        const areaSelect = $('#areaFilter');
-        Array.from(allAreas).sort().forEach(area => {
-            areaSelect.append(`<option value="${area}" style="background:#0f172a; color:#fff;">${area}</option>`);
-        });
-
-        const initialGroupedData = processGroupData(data);
-
-        mainTable = $('#branchTable').DataTable({
-            data: initialGroupedData,
-            createdRow: function(row) {
-                $(row).on('click', function() {
-                    const d = mainTable.row(this).data();
-                    openDetail(d.name);
-                });
-            },
-            columns: [
-                { data: 'name', render: d => `<span class="fw-semibold" style="color:#93c5fd; font-weight:600;">${d}</span>` },
-                { data: 'c', className: 'text-center', render: d => `<span class="badge-custom">${d}</span>` },
-                { data: 'd', className: 'text-end', render: d => `<span style="color:#cbd5e1; font-weight:500;">${f(d)}</span>` },
-                { data: 't', className: 'text-end fw-bold', render: d => `<span style="color:#ffffff; font-weight:700;">${f(d)}</span>` },
-                { data: 'u', className: 'text-end', render: d => `<span style="color:#6ee7b7; font-weight:600;">${f(d)}</span>` },
-                { data: 'o1_3', className: 'text-end', render: d => `<span style="color:#fca5a5; font-weight:600;">${f(d)}</span>` },
-                { data: 'o4_7', className: 'text-end', render: d => `<span style="color:#fb7185; font-weight:600;">${f(d)}</span>` },
-                { data: 'o8_30', className: 'text-end', render: d => `<span style="color:#f87171; font-weight:600;">${f(d)}</span>` },
-                { data: 'oOver30', className: 'text-end', render: d => `<span style="color:#ef4444; font-weight:700;">${f(d)}</span>` },
-                { data: 'up', className: 'text-center', render: d => {
-                    if (!d) return '<span class="text-slate-400" style="font-size:0.7rem;">-</span>';
-                    const date = new Date(d);
-                    const dateStr = date.toISOString().split('T')[0];
-                    const timeStr = date.toTimeString().slice(0, 5);
-                    return `<span class="text-slate-300" style="font-size:0.7rem; font-weight:500;">${dateStr}<br/>${timeStr}</span>`;
-                }},
-                { className: 'text-center', render: () => `<button class="btn btn-sm px-3 py-1" style="background:rgba(59,130,246,0.25);color:#60a5fa;border:1px solid rgba(59,130,246,0.5);border-radius:8px;font-size:0.7rem;font-weight:600;">View</button>` }
-            ],
-            dom: 'Bfrtip',
-            buttons: [{ extend: 'excel', className: 'btn btn-sm', text: '<i data-lucide="download" style="width:14px;height:14px;"></i> Excel' }],
-            language: { search: '', searchPlaceholder: 'Search branches...' },
-            pageLength: 25,
-            drawCallback: function() { lucide.createIcons(); }
-        });
-
-        $('#areaFilter').on('change', function() {
-            const selectedArea = $(this).val();
-            const filteredData = selectedArea === '' ? fullData : fullData.filter(x => x.area === selectedArea);
-            
-            updateKPIs(filteredData);
-            
-            const reGrouped = processGroupData(filteredData);
-            mainTable.clear().rows.add(reGrouped).draw();
-        });
-
-        mainTable.buttons().container().appendTo('#branchBtnGroup');
-        lucide.createIcons();
-    }
-
-    function openDetail(branchName) {
-        const list = fullData.filter(x => x.branch === branchName);
-        $('#mBranchName').text(branchName);
-
-        if ($.fn.DataTable.isDataTable('#customerTable')) {
-            $('#customerTable').DataTable().destroy();
         }
 
-        const cTable = $('#customerTable').DataTable({
-            data: list,
-            scrollX: true,
-            scrollY: '65vh',
-            scrollCollapse: true,
-            paging: false,
-            columns: [
-                { data: 'customerCode', render: d => `<span class="fw-semibold" style="color:#93c5fd;">${d}</span>` },
-                { data: 'customerName', render: d => `<span style="color:#ffffff; font-weight:500;">${d}</span>` },
-                { data: 'deposit', className: 'text-end', render: d => f(d) },
-                { data: 'total', className: 'text-end fw-bold text-white', render: d => `<span style="color:#ffffff; font-weight:700;">${f(d)}</span>` },
-                { data: 'undue', className: 'text-end', render: d => `<span style="color:#6ee7b7; font-weight:600;">${f(d)}</span>` },
-                { data: 'overdue', className: 'text-end val-overdue', render: d => `<span style="color:#fca5a5; font-weight:700;">${f(d)}</span>` },
-                { data: 'overdue1', className: 'text-end', render: d => f(d) },
-                { data: 'overdue2', className: 'text-end', render: d => f(d) },
-                { data: 'overdue3', className: 'text-end', render: d => f(d) },
-                { data: 'overdue4', className: 'text-end', render: d => f(d) },
-                { data: 'overdue5', className: 'text-end', render: d => f(d) },
-                { data: 'overdue6', className: 'text-end', render: d => f(d) },
-                { data: 'overdue7_30', className: 'text-end', render: d => `<span style="color:#93c5fd;font-weight:600;">${f(d)}</span>` },
-                { data: 'overdueOver30', className: 'text-end', render: d => `<span style="color:#ef4444;font-weight:700;">${f(d)}</span>` }
-            ],
-            dom: 'Bfrtip',
-            buttons: [{ extend: 'excel', className: 'btn btn-sm', text: 'Download Details' }],
-            drawCallback: function() { lucide.createIcons(); }
-        });
+        function updateKPIs(data) {
+            let t = 0, r = 0, d = 0, overDepCount = 0, noDepCount = 0;
+            data.forEach(x => {
+                t += Number(x.total || 0);
+                r += Number(x.overdue || 0);
+                d += Number(x.deposit || 0);
+                if (Number(x.total) > Number(x.deposit)) overDepCount++;
+                if (Number(x.deposit) === 0 && Number(x.total) > 0) noDepCount++;
+            });
 
-        $('#custBtnGroup').empty();
-        cTable.buttons().container().appendTo('#custBtnGroup');
+            $('#kpiTotal').text(t.toLocaleString());
+            $('#kpiRisk').text(r.toLocaleString());
+            $('#kpiDeposit').text(d.toLocaleString());
 
-        const modal = new bootstrap.Modal(document.getElementById('detailModal'));
-        modal.show();
-        setTimeout(() => { cTable.columns.adjust().draw(); }, 300);
-    }
+            $('#execAnalysis').html(`
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                            <div><strong class="text-red-300">Exposure Alert:</strong> <strong class="text-white">${overDepCount}</strong> <span class="text-slate-300">ลูกค้ามียอดหนี้เกินวงเงินค้ำประกัน</span></div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="d-flex align-items-start gap-2">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" style="flex-shrink:0; margin-top:2px;"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                            <div><strong class="text-amber-300">Security Risk:</strong> <strong class="text-white">${noDepCount}</strong> <span class="text-slate-300">ลูกค้ามียอดหนี้โดยไม่มีเงินค้ำประกัน</span></div>
+                        </div>
+                    </div>
+                </div>
+            `);
+        }
 
-    init();
+        function processGroupData(data) {
+            const groups = {};
+            data.forEach(r => {
+                if (!groups[r.branch]) {
+                    groups[r.branch] = { 
+                        name: r.branch, 
+                        area: r.area, 
+                        c: 0, d: 0, t: 0, u: 0, 
+                        o1_3: 0, o4_7: 0, o8_30: 0, oOver30: 0,
+                        up: r.lastUpdate 
+                    };
+                }
+                groups[r.branch].c++;
+                groups[r.branch].d += Number(r.deposit || 0);
+                groups[r.branch].t += Number(r.total || 0);
+                groups[r.branch].u += Number(r.undue || 0);
+                groups[r.branch].o1_3 += Number(r.overdue1 || 0) + Number(r.overdue2 || 0) + Number(r.overdue3 || 0);
+                groups[r.branch].o4_7 += Number(r.overdue4 || 0) + Number(r.overdue5 || 0) + Number(r.overdue6 || 0);
+                groups[r.branch].o8_30 += Number(r.overdue7_30 || 0);
+                groups[r.branch].oOver30 += Number(r.overdueOver30 || 0);
+            });
+            return Object.values(groups);
+        }
+
+        function renderMainTable(data) {
+            const allAreas = new Set();
+            data.forEach(r => { if (r.area) allAreas.add(r.area); });
+
+            const areaSelect = $('#areaFilter');
+            Array.from(allAreas).sort().forEach(area => {
+                areaSelect.append(`<option value="${area}">${area}</option>`);
+            });
+
+            const initialGroupedData = processGroupData(data);
+
+            mainTable = $('#branchTable').DataTable({
+                data: initialGroupedData,
+                createdRow: function(row, data, index) {
+                    $(row).css('cursor', 'pointer');
+                    $(row).on('click', function() {
+                        const rowData = mainTable.row(this).data();
+                        openDetail(rowData.name);
+                    });
+                },
+                columns: [
+                    { data: 'name', render: d => `<span class="fw-semibold" style="color:#93c5fd; font-weight:600;">${d}</span>` },
+                    { data: 'c', className: 'text-center', render: d => `<span class="badge-custom">${d}</span>` },
+                    { data: 'd', className: 'text-end', render: d => `<span style="color:#cbd5e1; font-weight:500;">${f(d)}</span>` },
+                    { data: 't', className: 'text-end fw-bold', render: d => `<span style="color:#ffffff; font-weight:700;">${f(d)}</span>` },
+                    { data: 'u', className: 'text-end', render: d => `<span style="color:#6ee7b7; font-weight:600;">${f(d)}</span>` },
+                    { data: 'o1_3', className: 'text-end', render: d => `<span style="color:#fca5a5; font-weight:600;">${f(d)}</span>` },
+                    { data: 'o4_7', className: 'text-end', render: d => `<span style="color:#fb7185; font-weight:600;">${f(d)}</span>` },
+                    { data: 'o8_30', className: 'text-end', render: d => `<span style="color:#f87171; font-weight:600;">${f(d)}</span>` },
+                    { data: 'oOver30', className: 'text-end', render: d => `<span style="color:#ef4444; font-weight:700;">${f(d)}</span>` },
+                    { data: 'up', className: 'text-center', render: d => {
+                        if (!d) return '<span class="text-slate-400" style="font-size:0.7rem;">-</span>';
+                        const date = new Date(d);
+                        const dateStr = date.toISOString().split('T')[0];
+                        const timeStr = date.toTimeString().slice(0, 5);
+                        return `<span class="text-slate-300" style="font-size:0.7rem; font-weight:500;">${dateStr}<br/>${timeStr}</span>`;
+                    }},
+                    { className: 'text-center', render: () => `<button class="btn btn-sm px-3 py-1" style="background:rgba(59,130,246,0.25);color:#60a5fa;border:1px solid rgba(59,130,246,0.5);border-radius:8px;font-size:0.7rem;font-weight:600;">View</button>` }
+                ],
+                dom: 'Bfrtip',
+                buttons: [{ extend: 'excel', className: 'btn btn-sm', text: '📊 Excel' }],
+                language: { search: '', searchPlaceholder: 'Search branches...' },
+                pageLength: 25,
+                order: [[0, 'asc']]
+            });
+
+            $('#areaFilter').on('change', function() {
+                const selectedArea = $(this).val();
+                const filteredData = selectedArea === '' ? fullData : fullData.filter(x => x.area === selectedArea);
+                updateKPIs(filteredData);
+                const reGrouped = processGroupData(filteredData);
+                mainTable.clear().rows.add(reGrouped).draw();
+            });
+
+            mainTable.buttons().container().appendTo('#branchBtnGroup');
+        }
+
+        function openDetail(branchName) {
+            const list = fullData.filter(x => x.branch === branchName);
+            $('#mBranchName').text(branchName);
+
+            if ($.fn.DataTable.isDataTable('#customerTable')) {
+                $('#customerTable').DataTable().destroy();
+            }
+
+            const cTable = $('#customerTable').DataTable({
+                data: list,
+                scrollX: true,
+                scrollY: '65vh',
+                scrollCollapse: true,
+                paging: false,
+                columns: [
+                    { data: 'customerCode', render: d => `<span class="fw-semibold" style="color:#93c5fd;">${d || '-'}</span>` },
+                    { data: 'customerName', render: d => `<span style="color:#ffffff; font-weight:500;">${d || '-'}</span>` },
+                    { data: 'deposit', className: 'text-end', render: d => f(d) },
+                    { data: 'total', className: 'text-end fw-bold text-white', render: d => `<span style="color:#ffffff; font-weight:700;">${f(d)}</span>` },
+                    { data: 'undue', className: 'text-end', render: d => `<span style="color:#6ee7b7; font-weight:600;">${f(d)}</span>` },
+                    { data: 'overdue', className: 'text-end val-overdue', render: d => `<span style="color:#fca5a5; font-weight:700;">${f(d)}</span>` },
+                    { data: 'overdue1', className: 'text-end', render: d => f(d) },
+                    { data: 'overdue2', className: 'text-end', render: d => f(d) },
+                    { data: 'overdue3', className: 'text-end', render: d => f(d) },
+                    { data: 'overdue4', className: 'text-end', render: d => f(d) },
+                    { data: 'overdue5', className: 'text-end', render: d => f(d) },
+                    { data: 'overdue6', className: 'text-end', render: d => f(d) },
+                    { data: 'overdue7_30', className: 'text-end', render: d => `<span style="color:#93c5fd;font-weight:600;">${f(d)}</span>` },
+                    { data: 'overdueOver30', className: 'text-end', render: d => `<span style="color:#ef4444;font-weight:700;">${f(d)}</span>` }
+                ],
+                dom: 'Bfrtip',
+                buttons: [{ extend: 'excel', className: 'btn btn-sm', text: '📥 Download Details' }],
+                order: [[4, 'desc']]
+            });
+
+            $('#custBtnGroup').empty();
+            cTable.buttons().container().appendTo('#custBtnGroup');
+
+            const modal = new bootstrap.Modal(document.getElementById('detailModal'));
+            modal.show();
+            setTimeout(() => { cTable.columns.adjust().draw(); }, 300);
+        }
+
+        init();
+    });
   </script>
  </body>
 </html>

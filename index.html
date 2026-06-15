@@ -1,169 +1,394 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Northern Farm | Executive Credit Intelligence</title>
-    
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-    
-    <style>
-        :root { --navy: #0f172a; --blue: #2563eb; --border: #e2e8f0; --danger-soft: #fff1f2; }
-        body { background-color: #f8fafc; font-family: 'Inter', sans-serif; color: #1e293b; }
-        
-        /* Nav & Header */
-        .navbar { background: var(--navy); border-bottom: 4px solid var(--blue); padding: 1rem 2rem; }
-        
-        /* KPI Cards */
-        .kpi-card { border: none; border-radius: 12px; background: #fff; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border-left: 5px solid #cbd5e1; }
-        .kpi-card.total { border-left-color: var(--blue); }
-        .kpi-card.risk { border-left-color: #ef4444; }
-        .kpi-card.security { border-left-color: #10b981; }
-        .kpi-label { font-size: 0.7rem; font-weight: 700; color: #64748b; letter-spacing: 1px; }
+<!doctype html>
+<html lang="th">
+ <head>
+  <script src="/_sdk/telemetry_sdk.js"></script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Northern Farm | Executive Credit Intelligence</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.datatables.net/buttons/2.4.2/css/buttons.bootstrap5.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css">
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <style>
+        * { font-family: 'DM Sans', sans-serif; }
+        body { background: #0c1222; min-height: 100vh; }
 
-        /* Table Professional Look */
-        .card-main { border: 1px solid var(--border); border-radius: 12px; background: #fff; overflow: hidden; }
-        .table thead th { background: #f1f5f9; color: #475569; font-size: 0.7rem; text-transform: uppercase; padding: 16px; border-bottom: 2px solid var(--border); }
-        .table tbody td { padding: 14px 16px; border-bottom: 1px solid #f1f5f9; }
-        .row-link { cursor: pointer; transition: background 0.2s; }
-        .row-link:hover { background-color: #f8fafc !important; }
+        .glass-card {
+            background: rgba(255,255,255,0.03);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+        }
+
+        .kpi-card {
+            background: linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .kpi-card:hover { transform: translateY(-4px); box-shadow: 0 20px 40px rgba(0,0,0,0.3); }
+        .kpi-card::before {
+            content: '';
+            position: absolute;
+            top: 0; left: 0; right: 0;
+            height: 3px;
+            border-radius: 16px 16px 0 0;
+        }
+        .kpi-card.total::before { background: linear-gradient(90deg, #3b82f6, #06b6d4); }
+        .kpi-card.risk::before { background: linear-gradient(90deg, #ef4444, #f97316); }
+        .kpi-card.security::before { background: linear-gradient(90deg, #10b981, #34d399); }
+
+        .table-container {
+            background: #0f172a; /* พื้นหลังเข้มทึบไม่โปร่งแสง */
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 20px rgba(0,0,0,0.4);
+        }
+
+        /* แก้ไขหัวตารางหลัก - พื้นหลังเข้ม ตัวหนังสือขาวชัด */
+        #branchTable thead th {
+            background: #0a0f1c !important;
+            color: #ffffff !important;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 14px 16px;
+            border-bottom: 2px solid #2d3748 !important;
+            font-weight: 700;
+        }
         
-        /* Value Coloring */
-        .text-zero { color: #cbd5e1; }
-        .val-overdue { color: #be123c; font-weight: 600; background-color: var(--danger-soft); }
+        /* แก้ไขเนื้อหาในตารางหลัก - พื้นหลังเข้ม ตัวหนังสือขาวสด */
+        #branchTable {
+            background-color: #111827 !important;
+        }
+        #branchTable tbody tr {
+            background-color: #111827 !important;
+            border-bottom: 1px solid #1f2937 !important;
+        }
+        #branchTable tbody td {
+            color: #f1f5f9 !important;
+            padding: 14px 16px;
+            font-size: 0.85rem;
+            font-weight: 500;
+            background-color: #111827 !important;
+            border-bottom: 1px solid #1f2937 !important;
+        }
+        #branchTable tbody tr:hover td {
+            background-color: #1e293b !important;
+        }
+        #branchTable tbody tr:hover {
+            background-color: #1e293b !important;
+        }
+
+        /* ปรับสีตัวเลขให้เด่นชัด */
+        .text-zero { color: #9ca3af !important; font-weight: 400; }
+        .val-overdue { color: #fca5a5 !important; font-weight: 700; }
+
+        .loader-overlay {
+            position: fixed; inset: 0;
+            background: #0c1222;
+            z-index: 9999;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: center;
+        }
+        .pulse-ring {
+            width: 60px; height: 60px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #3b82f6;
+            border-right-color: #06b6d4;
+            animation: spin 1s linear infinite;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* ปรับแต่ง DataTables controls */
+        .dataTables_wrapper .dataTables_filter input {
+            background: rgba(255,255,255,0.12) !important;
+            border: 1px solid rgba(255,255,255,0.25) !important;
+            color: #ffffff !important;
+            border-radius: 8px !important;
+            padding: 6px 12px !important;
+        }
+        .dataTables_wrapper .dataTables_filter input:focus {
+            background: rgba(255,255,255,0.2) !important;
+            border-color: #3b82f6 !important;
+            outline: none;
+        }
+        .dataTables_filter label { color: #cbd5e1 !important; font-weight: 500; }
+        .dataTables_info { color: #94a3b8 !important; font-size: 0.75rem !important; }
+        .dataTables_paginate .page-link { 
+            background: #1e293b !important; 
+            border-color: #334155 !important; 
+            color: #cbd5e1 !important;
+        }
+        .dataTables_paginate .page-item.active .page-link { 
+            background: #3b82f6 !important; 
+            border-color: #3b82f6 !important; 
+            color: #fff !important;
+        }
+        .dataTables_paginate .page-link:hover {
+            background: #334155 !important;
+            color: #ffffff !important;
+        }
+
+        .dt-buttons .btn { 
+            background: rgba(16,185,129,0.2) !important; 
+            border: 1px solid rgba(16,185,129,0.5) !important; 
+            color: #34d399 !important; 
+            border-radius: 8px !important; 
+            font-size: 0.75rem !important; 
+            font-weight: 600; 
+        }
+        .dt-buttons .btn:hover {
+            background: rgba(16,185,129,0.35) !important;
+            color: #6ee7b7 !important;
+        }
+
+        /* Modal & Customer Table ความคมชัดสูง - พื้นหลังเข้ม ตัวหนังสือขาว */
+        .modal-content { background: #0f172a; border: 1px solid rgba(255,255,255,0.15); }
+        .modal-header { background: #0f172a; border-bottom: 1px solid #1e293b; }
+        .modal-body { background: #0c1222; }
         
-        /* Modal & Scroll Fix */
-        .modal-header { border-bottom: 1px solid var(--border); background: #fff; }
-        .dataTables_scrollBody { border-bottom: 1px solid var(--border); }
+        #customerTable {
+            background-color: #111827 !important;
+        }
+        #customerTable thead th { 
+            background: #0a0f1c !important; 
+            color: #ffffff !important; 
+            font-size: 0.7rem; 
+            text-transform: uppercase; 
+            letter-spacing: 1px; 
+            padding: 12px; 
+            border-bottom: 2px solid #2d3748 !important;
+            font-weight: 700;
+        }
+        #customerTable tbody tr {
+            background-color: #111827 !important;
+            border-bottom: 1px solid #1f2937 !important;
+        }
+        #customerTable tbody td { 
+            color: #f1f5f9 !important;
+            padding: 11px 12px; 
+            font-size: 0.8rem; 
+            font-weight: 500;
+            background-color: #111827 !important;
+            border-bottom: 1px solid #1f2937 !important;
+        }
+        #customerTable tbody tr:hover td {
+            background-color: #1e293b !important;
+        }
+        .btn-close { filter: invert(1); opacity: 0.8; }
+        .btn-close:hover { opacity: 1; }
+
+        .insight-card {
+            background: linear-gradient(135deg, rgba(251,191,36,0.12), rgba(251,191,36,0.03));
+            border: 1px solid rgba(251,191,36,0.25);
+            border-radius: 12px;
+        }
+
+        .nav-bar {
+            background: linear-gradient(180deg, rgba(15,23,42,0.98), rgba(12,18,34,0.95));
+            backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.08);
+        }
         
-        .loader-overlay { position: fixed; inset: 0; background: #fff; z-index: 9999; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+        /* ปรับแต่ง scrollbar ให้สวยงาม */
+        .table-responsive::-webkit-scrollbar {
+            height: 8px;
+            width: 8px;
+        }
+        .table-responsive::-webkit-scrollbar-track {
+            background: #1e293b;
+            border-radius: 4px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb {
+            background: #475569;
+            border-radius: 4px;
+        }
+        .table-responsive::-webkit-scrollbar-thumb:hover {
+            background: #64748b;
+        }
+        
+        /* ปรับแต่ง select dropdown */
+        #areaFilter {
+            background: #1e293b !important;
+            border: 1px solid #334155 !important;
+            color: #f1f5f9 !important;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+        #areaFilter option {
+            background: #0f172a !important;
+            color: #f1f5f9 !important;
+        }
+        
+        /* ปรับ badge ในตาราง */
+        .badge-custom {
+            background: rgba(59,130,246,0.3);
+            color: #93c5fd;
+            font-weight: 600;
+            padding: 4px 10px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+        }
     </style>
-</head>
-<body>
-
-<div id="loader" class="loader-overlay">
-    <div class="spinner-border text-primary" role="status"></div>
-    <div class="mt-3 fw-bold text-muted small">SECURE DATA SYNCING...</div>
-</div>
-
-<nav class="navbar navbar-dark mb-4 shadow-lg">
-    <div class="container-fluid">
-        <span class="navbar-brand d-flex align-items-center">
-            <i class="fa-solid fa-building-shield me-3 text-info"></i>
-            <div>
-                <div class="fw-bold fs-5 lh-1">Northern Farm</div>
-                <small class="opacity-75" style="font-size: 0.65rem; letter-spacing: 1px;">CREDIT RISK INTELLIGENCE</small>
-            </div>
-        </span>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+  <script src="/_sdk/resizing_sdk.js" type="text/javascript"></script>
+ </head>
+ <body data-template-id="__page-root">
+  <div id="loader" class="loader-overlay">
+   <div class="pulse-ring"></div>
+   <div class="mt-4 text-slate-400 text-xs font-semibold tracking-widest">
+     SECURE DATA SYNCING
+   </div>
+  </div>
+  <nav class="nav-bar px-6 py-4 mb-6 sticky-top">
+   <div class="d-flex align-items-center gap-3">
+    <div class="p-2 rounded-xl" style="background: linear-gradient(135deg, #3b82f6, #06b6d4);"><i data-lucide="shield-check" style="width:22px;height:22px;color:#fff;"></i>
     </div>
-</nav>
-
-<div class="container-fluid px-4">
-    
-    <div class="row g-4 mb-4">
-        <div class="col-md-4">
-            <div class="kpi-card total p-4">
-                <div class="kpi-label">TOTAL PORTFOLIO VALUE</div>
-                <h2 id="kpiTotal" class="fw-bold mb-0 mt-1">0</h2>
-                <small class="text-muted">Aggregate Outstanding Balance</small>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="kpi-card risk p-4">
-                <div class="kpi-label text-danger">CREDIT RISK EXPOSURE</div>
-                <h2 id="kpiRisk" class="fw-bold text-danger mb-0 mt-1">0</h2>
-                <small class="text-muted">Total Overdue Receivables</small>
-            </div>
-        </div>
-        <div class="col-md-4">
-            <div class="kpi-card security p-4">
-                <div class="kpi-label text-success">TOTAL SECURITY HELD</div>
-                <h2 id="kpiDeposit" class="fw-bold text-success mb-0 mt-1">0</h2>
-                <small class="text-muted">Customer Security Deposits</small>
-            </div>
-        </div>
+    <div>
+     <h1 data-template-id="brand-title" class="canva-text fw-bold text-white mb-0 lh-1" style="font-size:1.2rem;">Northern Farm</h1>
+     <p data-template-id="brand-subtitle" class="canva-text mb-0" style="font-size:0.6rem; color:#94a3b8; letter-spacing:2px;">EXECUTIVE CREDIT INTELLIGENCE</p>
     </div>
-
-    <div class="card card-main border-0 bg-transparent mb-4">
-        <div class="p-3 bg-white rounded shadow-sm border-start border-4 border-info">
-            <h6 class="fw-bold mb-2"><i class="fa-solid fa-lightbulb text-warning me-2"></i>Critical Exception Summary</h6>
-            <div id="execAnalysis" class="small text-secondary">Analyzing data patterns...</div>
-        </div>
+   </div>
+  </nav>
+  <main class="container-fluid px-4 pb-5">
+   <div class="row g-4 mb-5">
+    <div class="col-md-4">
+     <div class="kpi-card total p-4">
+      <div class="d-flex align-items-center gap-2 mb-2"><i data-lucide="wallet" style="width:16px;height:16px;color:#60a5fa;"></i> <span data-template-id="kpi-total-label" class="canva-text" style="font-size:0.65rem; font-weight:700; color:#94a3b8; letter-spacing:1.5px;">TOTAL OUTSTANDING BALANCE</span>
+      </div>
+      <h2 id="kpiTotal" class="fw-bold text-white mb-1" style="font-size:1.8rem;">0</h2><small data-template-id="kpi-total-sub" class="canva-text" style="color:#94a3b8; font-size:0.7rem;">รวมยอดลูกหนี้คงเหลือทั้งหมด</small>
+     </div>
     </div>
-
-    <div class="card-main shadow-sm">
-        <div class="p-4 border-bottom d-flex justify-content-between align-items-center">
-            <h6 class="mb-0 fw-bold text-navy"><i class="fa-solid fa-list-check me-2"></i>BRANCH PERFORMANCE MATRIX</h6>
-            <div id="branchBtnGroup"></div>
-        </div>
-        <div class="table-responsive">
-            <table id="branchTable" class="table table-hover align-middle w-100 mb-0">
-                <thead>
-                    <tr>
-                        <th>Branch</th>
-                        <th>Area</th>
-                        <th class="text-center">Customers</th>
-                        <th class="text-end">Deposit</th>
-                        <th class="text-end">Balance</th>
-                        <th class="text-end text-success">Undue</th>
-                        <th class="text-end text-danger">Overdue</th>
-                        <th class="text-center">Last Update</th>
-                        <th class="text-center">Action</th>
-                    </tr>
-                </thead>
-            </table>
-        </div>
+    <div class="col-md-4">
+     <div class="kpi-card risk p-4">
+      <div class="d-flex align-items-center gap-2 mb-2"><i data-lucide="alert-triangle" style="width:16px;height:16px;color:#f87171;"></i> <span data-template-id="kpi-risk-label" class="canva-text" style="font-size:0.65rem; font-weight:700; color:#ef4444; letter-spacing:1.5px;">TOTAL RISK OVERDUE</span>
+      </div>
+      <h2 id="kpiRisk" class="fw-bold mb-1" style="font-size:1.8rem; color:#fca5a5;">0</h2><small data-template-id="kpi-risk-sub" class="canva-text" style="color:#94a3b8; font-size:0.7rem;">ยอดค้างชำระเกินกำหนดรวม</small>
+     </div>
     </div>
-</div>
-
-<div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-fullscreen">
-        <div class="modal-content">
-            <div class="modal-header px-4 py-3 sticky-top shadow-sm">
-                <h5 class="modal-title d-flex align-items-center">
-                    <i class="fa-solid fa-users-viewfinder text-primary me-3 fs-4"></i>
-                    <div>
-                        <span id="mBranchName" class="fw-bold">Branch Name</span>
-                        <div class="small text-muted" style="font-size: 0.7rem;">DETAILED AGING REPORT</div>
-                    </div>
-                </h5>
-                <div class="d-flex align-items-center gap-2">
-                    <div id="custBtnGroup"></div>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-                </div>
-            </div>
-            <div class="modal-body p-4 bg-light">
-                <div class="card-main">
-                    <table id="customerTable" class="table align-middle w-100 mb-0" style="font-size: 0.85rem;">
-                        <thead class="table-dark">
-                            <tr>
-                                <th>Code</th><th>Customer Name</th><th class="text-end">Deposit</th><th class="text-end">Total</th><th class="text-end">Undue</th><th class="text-end text-danger">Overdue</th>
-                                <th>1D</th><th>2D</th><th>3D</th><th>4D</th><th>5D</th><th>6D</th><th class="bg-primary">7-30D</th><th class="bg-danger">30D+</th>
-                            </tr>
-                        </thead>
-                    </table>
-                </div>
-            </div>
-        </div>
+    <div class="col-md-4">
+     <div class="kpi-card security p-4">
+      <div class="d-flex align-items-center gap-2 mb-2"><i data-lucide="lock" style="width:16px;height:16px;color:#34d399;"></i> <span data-template-id="kpi-security-label" class="canva-text" style="font-size:0.65rem; font-weight:700; color:#10b981; letter-spacing:1.5px;">TOTAL COLLATERAL DEPOSIT</span>
+      </div>
+      <h2 id="kpiDeposit" class="fw-bold mb-1" style="font-size:1.8rem; color:#6ee7b7;">0</h2><small data-template-id="kpi-security-sub" class="canva-text" style="color:#94a3b8; font-size:0.7rem;">เงินค้ำประกัน/มัดจำทั้งหมด</small>
+     </div>
     </div>
-</div>
+   </div>
+   <div class="insight-card p-4 mb-5">
+    <div class="d-flex align-items-center gap-2 mb-2"><i data-lucide="lightbulb" style="width:18px;height:18px;color:#fbbf24;"></i> <span data-template-id="insight-title" class="canva-text fw-bold" style="color:#fbbf24; font-size:0.8rem;">EXECUTIVE CREDIT INSIGHTS ANALYSIS</span>
+    </div>
+    <div id="execAnalysis" class="text-slate-300" style="font-size:0.8rem;">
+      Analyzing data patterns...
+    </div>
+   </div>
+   <div class="table-container">
+    <div class="p-4 d-flex justify-content-between align-items-center" style="border-bottom:1px solid #1e293b;">
+     <div class="d-flex align-items-center gap-2"><i data-lucide="layout-grid" style="width:18px;height:18px;color:#60a5fa;"></i>
+      <h6 data-template-id="table-title" class="canva-text mb-0 fw-bold" style="color:#f1f5f9; font-size:0.85rem;">BRANCH CREDIT AGING OVERVIEW</h6>
+     </div>
+     <div class="d-flex align-items-center gap-3">
+      <div>
+       <label for="areaFilter" style="font-size:0.75rem; color:#cbd5e1; display:block; margin-bottom:4px; font-weight:500;">Filter by Area</label> 
+       <select id="areaFilter" class="form-select form-select-sm" style="background:#1e293b; border:1px solid #334155; color:#ffffff; border-radius:8px; font-size:0.75rem; padding:6px 10px; width:150px; cursor:pointer;"> 
+         <option value="" style="background:#0f172a; color:#fff;">All Areas</option> 
+       </select>
+      </div>
+      <div id="branchBtnGroup"></div>
+     </div>
+    </div>
+    <div class="table-responsive p-0">
+     <table id="branchTable" class="table table-borderless align-middle w-100 mb-0">
+      <thead>
+       <tr>
+        <th>Branch</th>
+        <th class="text-center">Customers</th>
+        <th class="text-end">Deposit</th>
+        <th class="text-end">Balance</th>
+        <th class="text-end">Undue</th>
+        <th class="text-end">1-3D</th>
+        <th class="text-end">4-7D</th>
+        <th class="text-end">8-30D</th>
+        <th class="text-end">30D+</th>
+        <th class="text-center">Last Update</th>
+        <th class="text-center">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+      </tbody>
+     </table>
+    </div>
+   </div>
+  </main>
+  <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+   <div class="modal-dialog modal-fullscreen">
+    <div class="modal-content">
+     <div class="modal-header px-4 py-3 sticky-top">
+      <h5 class="modal-title d-flex align-items-center gap-3">
+       <div class="p-2 rounded-lg" style="background:rgba(59,130,246,0.15);"><i data-lucide="users" style="width:20px;height:20px;color:#60a5fa;"></i>
+       </div>
+       <div><span id="mBranchName" class="fw-bold text-white">Branch</span>
+        <div class="text-slate-400" style="font-size:0.65rem; letter-spacing:1.5px;">
+          DETAILED AGING REPORT
+        </div>
+       </div></h5>
+      <div class="d-flex align-items-center gap-2">
+       <div id="custBtnGroup"></div><button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+     </div>
+     <div class="modal-body p-4">
+      <div class="table-container p-0">
+       <div class="table-responsive">
+        <table id="customerTable" class="table table-borderless align-middle w-100 mb-0">
+          <thead>
+            <tr>
+              <th>Code</th>
+              <th>Customer Name</th>
+              <th class="text-end">Deposit</th>
+              <th class="text-end">Total</th>
+              <th class="text-end">Undue</th>
+              <th class="text-end text-danger">Overdue</th>
+              <th class="text-end">1D</th>
+              <th class="text-end">2D</th>
+              <th class="text-end">3D</th>
+              <th class="text-end">4D</th>
+              <th class="text-end">5D</th>
+              <th class="text-end">6D</th>
+              <th class="text-end">7-30D</th>
+              <th class="text-end">30D+</th>
+             </tr>
+          </thead>
+          <tbody>
+          </tbody>
+         </table>
+       </div>
+      </div>
+     </div>
+    </div>
+   </div>
+  </div>
+  <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+  <script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
+  <script src="/_sdk/editing_sdk.js"></script>
+  <script>
+    lucide.createIcons();
 
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
-<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/dataTables.buttons.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.bootstrap5.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
-<script src="https://cdn.datatables.net/buttons/2.4.2/js/buttons.html5.min.js"></script>
-
-<script>
     const API_URL = 'https://script.google.com/macros/s/AKfycbwA7MzcEy6DKirevQdBFWLOzKaxboATV1A_MkdgnoZUaiSjtU5_LXRGm5M9OgF38EVT/exec';
     let fullData = [];
+    let mainTable;
 
     const f = (v) => {
         let n = Number(v || 0);
@@ -175,23 +400,23 @@
         try {
             const res = await fetch(API_URL, { redirect: 'follow' });
             fullData = await res.json();
-            
             updateKPIs(fullData);
             renderMainTable(fullData);
-            $('#loader').fadeOut();
-        } catch (e) { alert('Sync Error'); }
+            $('#loader').fadeOut(400);
+        } catch (e) {
+            $('#loader').html('<div class="text-danger text-center"><i data-lucide="wifi-off" style="width:40px;height:40px;"></i><p class="mt-3 fw-bold">Connection Error</p><p class="text-slate-500 small">Unable to sync data. Please refresh.</p></div>');
+            lucide.createIcons();
+        }
     }
 
     function updateKPIs(data) {
-        let t = 0, r = 0, d = 0;
-        let overDepCount = 0, noDepCount = 0;
-
+        let t = 0, r = 0, d = 0, overDepCount = 0, noDepCount = 0;
         data.forEach(x => {
             t += Number(x.total || 0);
             r += Number(x.overdue || 0);
             d += Number(x.deposit || 0);
-            if(Number(x.total) > Number(x.deposit)) overDepCount++;
-            if(Number(x.deposit) === 0 && Number(x.total) > 0) noDepCount++;
+            if (Number(x.total) > Number(x.deposit)) overDepCount++;
+            if (Number(x.deposit) === 0 && Number(x.total) > 0) noDepCount++;
         });
 
         $('#kpiTotal').text(t.toLocaleString());
@@ -199,57 +424,114 @@
         $('#kpiDeposit').text(d.toLocaleString());
 
         $('#execAnalysis').html(`
-            <div class="row">
-                <div class="col-md-6 border-end">
-                    <i class="fa-solid fa-circle-exclamation text-danger me-2"></i> 
-                    <strong>Exposure Alert:</strong> <strong>${overDepCount}</strong> customers There is an outstanding debt exceeding the deposit.ำ
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start gap-2">
+                        <i data-lucide="alert-circle" style="width:16px;height:16px;color:#ef4444;flex-shrink:0;margin-top:2px;"></i>
+                        <div><strong class="text-red-300">Exposure Alert:</strong> <strong class="text-white">${overDepCount}</strong> <span class="text-slate-300">ลูกค้ามียอดหนี้เกินวงเงินค้ำประกัน</span></div>
+                    </div>
                 </div>
-                <div class="col-md-6 ps-4">
-                    <i class="fa-solid fa-shield-slash text-warning me-2"></i> 
-                    <strong>Security Risk:</strong> <strong>${noDepCount}</strong> customers There is an outstanding debt without a deposit.ำ
+                <div class="col-md-6">
+                    <div class="d-flex align-items-start gap-2">
+                        <i data-lucide="shield-off" style="width:16px;height:16px;color:#f59e0b;flex-shrink:0;margin-top:2px;"></i>
+                        <div><strong class="text-amber-300">Security Risk:</strong> <strong class="text-white">${noDepCount}</strong> <span class="text-slate-300">ลูกค้ามียอดหนี้โดยไม่มีเงินค้ำประกัน</span></div>
+                    </div>
                 </div>
             </div>
         `);
+        lucide.createIcons();
     }
 
-    function renderMainTable(data) {
+    function processGroupData(data) {
         const groups = {};
         data.forEach(r => {
-            if (!groups[r.branch]) groups[r.branch] = { name: r.branch, area: r.area, c:0, d:0, t:0, u:0, o:0, up: r.lastUpdate };
+            if (!groups[r.branch]) {
+                groups[r.branch] = { 
+                    name: r.branch, 
+                    area: r.area, 
+                    c: 0, d: 0, t: 0, u: 0, 
+                    o1_3: 0, o4_7: 0, o8_30: 0, oOver30: 0,
+                    up: r.lastUpdate 
+                };
+            }
             groups[r.branch].c++;
             groups[r.branch].d += Number(r.deposit || 0);
             groups[r.branch].t += Number(r.total || 0);
             groups[r.branch].u += Number(r.undue || 0);
-            groups[r.branch].o += Number(r.overdue || 0);
+            groups[r.branch].o1_3 += Number(r.overdue1 || 0) + Number(r.overdue2 || 0) + Number(r.overdue3 || 0);
+            groups[r.branch].o4_7 += Number(r.overdue4 || 0) + Number(r.overdue5 || 0) + Number(r.overdue6 || 0);
+            groups[r.branch].o8_30 += Number(r.overdue7_30 || 0);
+            groups[r.branch].oOver30 += Number(r.overdueOver30 || 0);
+        });
+        return Object.values(groups);
+    }
+
+    function renderMainTable(data) {
+        const allAreas = new Set();
+        data.forEach(r => { if (r.area) allAreas.add(r.area); });
+
+        const areaSelect = $('#areaFilter');
+        Array.from(allAreas).sort().forEach(area => {
+            areaSelect.append(`<option value="${area}" style="background:#0f172a; color:#fff;">${area}</option>`);
         });
 
-        const table = $('#branchTable').DataTable({
-            data: Object.values(groups),
-            createdRow: function(row, data) {
-                $(row).addClass('row-link').on('click', () => openDetail(data.name));
+        const initialGroupedData = processGroupData(data);
+
+        mainTable = $('#branchTable').DataTable({
+            data: initialGroupedData,
+            createdRow: function(row) {
+                $(row).on('click', function() {
+                    const d = mainTable.row(this).data();
+                    openDetail(d.name);
+                });
             },
             columns: [
-                { data: 'name', className: 'fw-bold text-primary' },
-                { data: 'area' },
-                { data: 'c', className: 'text-center' },
-                { data: 'd', className: 'text-end', render: d => f(d) },
-                { data: 't', className: 'text-end fw-bold', render: d => f(d) },
-                { data: 'u', className: 'text-end text-success', render: d => f(d) },
-                { data: 'o', className: 'text-end val-overdue', render: d => f(d) },
-                { data: 'up', className: 'text-center small text-muted' },
-                { className: 'text-center', render: () => `<button class="btn btn-sm btn-primary px-3">View</button>` }
+                { data: 'name', render: d => `<span class="fw-semibold" style="color:#93c5fd; font-weight:600;">${d}</span>` },
+                { data: 'c', className: 'text-center', render: d => `<span class="badge-custom">${d}</span>` },
+                { data: 'd', className: 'text-end', render: d => `<span style="color:#cbd5e1; font-weight:500;">${f(d)}</span>` },
+                { data: 't', className: 'text-end fw-bold', render: d => `<span style="color:#ffffff; font-weight:700;">${f(d)}</span>` },
+                { data: 'u', className: 'text-end', render: d => `<span style="color:#6ee7b7; font-weight:600;">${f(d)}</span>` },
+                { data: 'o1_3', className: 'text-end', render: d => `<span style="color:#fca5a5; font-weight:600;">${f(d)}</span>` },
+                { data: 'o4_7', className: 'text-end', render: d => `<span style="color:#fb7185; font-weight:600;">${f(d)}</span>` },
+                { data: 'o8_30', className: 'text-end', render: d => `<span style="color:#f87171; font-weight:600;">${f(d)}</span>` },
+                { data: 'oOver30', className: 'text-end', render: d => `<span style="color:#ef4444; font-weight:700;">${f(d)}</span>` },
+                { data: 'up', className: 'text-center', render: d => {
+                    if (!d) return '<span class="text-slate-400" style="font-size:0.7rem;">-</span>';
+                    const date = new Date(d);
+                    const dateStr = date.toISOString().split('T')[0];
+                    const timeStr = date.toTimeString().slice(0, 5);
+                    return `<span class="text-slate-300" style="font-size:0.7rem; font-weight:500;">${dateStr}<br/>${timeStr}</span>`;
+                }},
+                { className: 'text-center', render: () => `<button class="btn btn-sm px-3 py-1" style="background:rgba(59,130,246,0.25);color:#60a5fa;border:1px solid rgba(59,130,246,0.5);border-radius:8px;font-size:0.7rem;font-weight:600;">View</button>` }
             ],
             dom: 'Bfrtip',
-            buttons: [{ extend: 'excel', className: 'btn btn-sm btn-success', text: '<i class="fa-solid fa-file-excel me-1"></i> Excel' }]
+            buttons: [{ extend: 'excel', className: 'btn btn-sm', text: '<i data-lucide="download" style="width:14px;height:14px;"></i> Excel' }],
+            language: { search: '', searchPlaceholder: 'Search branches...' },
+            pageLength: 25,
+            drawCallback: function() { lucide.createIcons(); }
         });
-        table.buttons().container().appendTo('#branchBtnGroup');
+
+        $('#areaFilter').on('change', function() {
+            const selectedArea = $(this).val();
+            const filteredData = selectedArea === '' ? fullData : fullData.filter(x => x.area === selectedArea);
+            
+            updateKPIs(filteredData);
+            
+            const reGrouped = processGroupData(filteredData);
+            mainTable.clear().rows.add(reGrouped).draw();
+        });
+
+        mainTable.buttons().container().appendTo('#branchBtnGroup');
+        lucide.createIcons();
     }
 
     function openDetail(branchName) {
         const list = fullData.filter(x => x.branch === branchName);
         $('#mBranchName').text(branchName);
 
-        if ($.fn.DataTable.isDataTable('#customerTable')) $('#customerTable').DataTable().destroy();
+        if ($.fn.DataTable.isDataTable('#customerTable')) {
+            $('#customerTable').DataTable().destroy();
+        }
 
         const cTable = $('#customerTable').DataTable({
             data: list,
@@ -258,33 +540,35 @@
             scrollCollapse: true,
             paging: false,
             columns: [
-                { data: 'customerCode', className: 'fw-bold' },
-                { data: 'customerName' },
+                { data: 'customerCode', render: d => `<span class="fw-semibold" style="color:#93c5fd;">${d}</span>` },
+                { data: 'customerName', render: d => `<span style="color:#ffffff; font-weight:500;">${d}</span>` },
                 { data: 'deposit', className: 'text-end', render: d => f(d) },
-                { data: 'total', className: 'text-end fw-bold', render: d => f(d) },
-                { data: 'undue', className: 'text-end', render: d => f(d) },
-                { data: 'overdue', className: 'text-end val-overdue', render: d => f(d) },
-                { data: 'overdue1', render: d => f(d) }, { data: 'overdue2', render: d => f(d) },
-                { data: 'overdue3', render: d => f(d) }, { data: 'overdue4', render: d => f(d) },
-                { data: 'overdue5', render: d => f(d) }, { data: 'overdue6', render: d => f(d) },
-                { data: 'overdue7_30', className: 'bg-primary bg-opacity-10', render: d => f(d) },
-                { data: 'overdueOver30', className: 'bg-danger bg-opacity-10 text-danger fw-bold', render: d => f(d) }
+                { data: 'total', className: 'text-end fw-bold text-white', render: d => `<span style="color:#ffffff; font-weight:700;">${f(d)}</span>` },
+                { data: 'undue', className: 'text-end', render: d => `<span style="color:#6ee7b7; font-weight:600;">${f(d)}</span>` },
+                { data: 'overdue', className: 'text-end val-overdue', render: d => `<span style="color:#fca5a5; font-weight:700;">${f(d)}</span>` },
+                { data: 'overdue1', className: 'text-end', render: d => f(d) },
+                { data: 'overdue2', className: 'text-end', render: d => f(d) },
+                { data: 'overdue3', className: 'text-end', render: d => f(d) },
+                { data: 'overdue4', className: 'text-end', render: d => f(d) },
+                { data: 'overdue5', className: 'text-end', render: d => f(d) },
+                { data: 'overdue6', className: 'text-end', render: d => f(d) },
+                { data: 'overdue7_30', className: 'text-end', render: d => `<span style="color:#93c5fd;font-weight:600;">${f(d)}</span>` },
+                { data: 'overdueOver30', className: 'text-end', render: d => `<span style="color:#ef4444;font-weight:700;">${f(d)}</span>` }
             ],
             dom: 'Bfrtip',
-            buttons: [{ extend: 'excel', className: 'btn btn-sm btn-success', text: 'Download Details' }]
+            buttons: [{ extend: 'excel', className: 'btn btn-sm', text: 'Download Details' }],
+            drawCallback: function() { lucide.createIcons(); }
         });
 
         $('#custBtnGroup').empty();
         cTable.buttons().container().appendTo('#custBtnGroup');
-        
+
         const modal = new bootstrap.Modal(document.getElementById('detailModal'));
         modal.show();
-
-        // 🚨 แก้ปัญหาหัวตารางเบี้ยว 🚨
         setTimeout(() => { cTable.columns.adjust().draw(); }, 300);
     }
 
     init();
-</script>
-</body>
+  </script>
+ </body>
 </html>
